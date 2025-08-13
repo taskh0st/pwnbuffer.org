@@ -185,9 +185,11 @@ Roasting vulnerability</h1>
                 <strong>KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN</strong> que é
                 uma falha que ocorre quando o servidor não reconhece o
                 nome do usuário, então o KerBrute usa essa resposta para
-                identificar se um usuário existe ou não.</p>
-                <p>Agora quando o usuário existe, o servidor não retorna
-                um erro e sim responde a solicitação do usuário. Agora
+                identificar se um usuário existe ou não. <img
+                src="../../img/images/zack/as-rep-roasting/4.png"
+                alt="4" /><br />
+                Agora quando o usuário existe, o servidor não retorna um
+                erro e sim responde a solicitação do usuário. Agora
                 vamos usar outra ferramenta, essa vai ser responsável
                 pela captura do bloco de dados criptografado, o nome
                 dela é GetNPUsers; Vamos passar o arquivo de texto com
@@ -197,14 +199,14 @@ Roasting vulnerability</h1>
                 <p><img
                 src="../../img/images/zack/as-rep-roasting/5.png"
                 alt="5" /></p>
-                <p><img
-                src="../../img/images/zack/as-rep-roasting/4.png"
-                alt="4" /></p>
                 <p>Veja só, ela capturou o bloco de dados criptografado,
                 agora é só usarmos alguma ferramenta de quebra de senha,
                 se tudo ocorrer bem, conseguiremos capturar a senha em
                 formato legível. Mas antes, vamos analisar mais a fundo,
                 o que essa incrível ferramenta realmente faz:</p>
+                <p><img
+                src="../../img/images/zack/as-rep-roasting/6.png"
+                alt="6" /></p>
                 <p>Analisando o tráfego, percebe-se que a ferramenta fez
                 o envio do primeiro pacote <strong>AS-REQ</strong> para
                 o KDC, no CNameString está o nome robin, então ela
@@ -224,26 +226,23 @@ Roasting vulnerability</h1>
                 a parte onde foi enviado com o CNameString setado como
                 svc-admin.</p>
                 <p><img
-                src="../../img/images/zack/as-rep-roasting/6.png"
-                alt="6" /></p>
-                <p>Agora olha só, parece que aqui ocorreu um sucesso,
+                src="../../img/images/zack/as-rep-roasting/7.png"
+                alt="7" /><br />
+                Agora olha só, parece que aqui ocorreu um sucesso,
                 quando a nossa ferramenta envia uma solicitação
                 <strong>AS-REQ</strong>, ao invés dele retornar um erro,
                 ele retornou o <code>AS-REP</code> com o bloco de dados
                 criptografado.</p>
-                <p><img
-                src="../../img/images/zack/as-rep-roasting/7.png"
-                alt="7" /></p>
                 <p>Se analisarmos o conteúdo da resposta, encontramos
                 exatamente o hashe retornado pelo GetNPUsers</p>
                 <p><img
                 src="../../img/images/zack/as-rep-roasting/8.png"
                 alt="8" /><br />
-                E pronto, agora que entendemos sobre o funcionamento
-                dessas ferramentas, vamos pegar esse bloco de dados
-                criptografado e utilizar o hashcat para quebra-lo.<br />
                 <img src="../../img/images/zack/as-rep-roasting/9.png"
-                alt="9" /></p>
+                alt="9" /> E pronto, agora que entendemos sobre o
+                funcionamento dessas ferramentas, vamos pegar esse bloco
+                de dados criptografado e utilizar o hashcat para
+                quebra-lo.</p>
                 <p><img
                 src="../../img/images/zack/as-rep-roasting/10.png"
                 alt="10" /></p>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>paper - Writeup THM - Dragon Byte</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Writeup THM - Dragon Byte</h1>
+            <article>
+                  <p><a
+                  href="https://tryhackme.com/room/dragonbyte">https://tryhackme.com/room/dragonbyte</a></p>
+                  <p>Neste paper, irei fazer o passo a passo para a room
+                  Dragon Byte, feita pelo mano NullByte! Desde o recon
+                  até o <strong>root</strong>!</p>
+                  <h1 id="reconhecimento">Reconhecimento</h1>
+                  <p>Após iniciar a maquina e obter o IP, a primeira
+                  coisa que devemos fazer é o port scanning. Neste CTF
+                  utilizei a ferramenta <strong>RustScan</strong> para
+                  fazer o port scanning:</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/**rustscan**.png"
+                  alt="1" /></p>
+                  <p>Esse scan revelou que temos 3 portas abertas, sendo
+                  elas:</p>
+                  <ul>
+                  <li><code>9000</code> - http</li>
+                  <li><code>6048</code> - x11</li>
+                  <li><code>65200</code> - ???</li>
+                  </ul>
+                  <p>Descobrimos que, ao invés de utilizar a porta
+                  padrão 80, o serviço HTTP está rodando na porta 9000!
+                  Com essa informação em mãos, vamos abrir o endereço no
+                  navegador e verificar o conteúdo disponibilizado.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/port9000.png"
+                  alt="2" /></p>
+                  <p>Assim que acessamos a URL, nos deparamos com a
+                  página padrão do <strong>Nginx</strong>, o que indica
+                  que o servidor web está ativo, mas não revela muita
+                  coisa além disso. Por enquanto, não há nenhuma
+                  aplicação visível ou conteúdo personalizado sendo
+                  servido, apenas o index padrão.</p>
+                  <p>Diante disso, uma abordagem interessante é realizar
+                  um directory fuzzing, com o objetivo de descobrir se
+                  existem outros diretórios ou arquivos acessíveis além
+                  dessa página inicial padrão. Aqui iremos usar o
+                  <strong>gobuster</strong> para fazer este directory
+                  fuzzing</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/**gobuster**.png"
+                  alt="3" /></p>
+                  <p>Após realizar o bruteforce de diretórios com o
+                  <strong>gobuster</strong>, conseguimos identificar a
+                  existência de um diretório chamado <code>/corp</code>
+                  no servidor. Com essa descoberta, o próximo passo é
+                  acessar esse diretório pelo navegador para visualizar
+                  o conteúdo que ele disponibiliza!</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/corp-http.png"
+                  alt="4" /></p>
+                  <p>Ao acessarmos o diretório /corp, nos deparamos com
+                  um deface exibindo a mensagem "OWN3D BY Dragon Byte".
+                  Isso indica que alguém já esteve aqui antes de nós e
+                  comprometeu esse servidor! Provavelmente, o atacante
+                  deixou essa marca como uma espécie de "assinatura",
+                  comum em invasões onde o objetivo é demonstrar que o
+                  sistema foi violado!</p>
+                  <p>Enfim, agora que sabemos da existência do diretório
+                  /corp e que esse alvo já foi comprometido
+                  anteriormente (como vimos no deface deixado por
+                  "Dragon Byte"), é um bom indicativo de que podem
+                  existir outros arquivos ou diretórios ocultos por ali.
+                  Muitas vezes, após uma invasão, os atacantes deixam
+                  backdoors, ferramentas ou arquivos sensíveis que podem
+                  ser úteis para uma análise mais aprofundada ou até
+                  para facilitar o acesso ao sistema. Sendo assim, vamos
+                  realizar um novo directory fuzzing especificamente
+                  dentro do diretório /corp, utilizando o
+                  <strong>Gobuster</strong>, para tentar identificar
+                  possíveis recursos ocultos que possam nos fornecer
+                  mais informações ou abrir novas possibilidades de
+                  exploração.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/**gobuster**-corp.png"
+                  alt="5" /></p>
+                  <p>E voilà! Durante o directory fuzzing no diretório
+                  <code>/corp</code>, encontramos um novo caminho
+                  interessante, o <code>/images</code>. Ao acessá-lo,
+                  percebemos que há um index listing habilitado, o
+                  famoso index of, permitindo a visualização direta dos
+                  arquivos presentes nesse diretório sem qualquer tipo
+                  de restrição ou autenticação.</p>
+                  <p>Além disso, conseguimos identificar que o servidor
+                  está rodando a versão 1.18.0 do
+                  <strong>Nginx</strong>, o que pode ser útil para
+                  verificarmos possíveis vulnerabilidades conhecidas ou
+                  exploits específicos dessa versão.</p>
+                  <p>Com o index listing habilitado e essas informações
+                  em mãos, vamos analisar melhor esse diretório em busca
+                  de misconfigurations que possam nos ajudar a avançar
+                  na exploração do alvo.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/images.png"
+                  alt="6" /></p>
+                  <p>Na versão 1.18.0 do <strong>Nginx</strong>, uma das
+                  misconfigs mais famosas é o <strong>path
+                  traversal</strong>, onde o atacante consegue acessar
+                  arquivos, diretorios e afins que estão fora do
+                  website, podendo acessar arquivos como o /etc/passwd e
+                  etc.. No caso do <strong>Nginx</strong>, imagine que o
+                  <strong>Nginx</strong> foi configurado assim no
+                  <code>nginx.conf</code>:</p>
+                  <h3
+                  id="arquivonginxconf">Arquivo:"<strong>nginx</strong>.conf"</h3>
+                  <pre class="**nginx**"><code>server {
+    listen 80;
+    server_name pwnbuffer.org;
+
+    location /images/ {
+        **root** /var/www/public/;
+        autoindex on;
+    }
+}</code></pre>
+                  <p>O que acontece aqui é bem simples, a URL
+                  <code>http://pwnbuffer.org/images/foo.png</code> vai
+                  buscar o arquivo no caminho:
+                  <code>/var/www/public/images/foo.png</code>. Mas...
+                  essa configuração está vulnerável porque o
+                  <strong>root</strong> foi usado, e a location adiciona
+                  automaticamente o prefixo /images/ ao caminho do
+                  <strong>root</strong>. Então, se colocarmos dois
+                  pontos após o "images", desta forma:
+                  <code>/images../</code> iremos cair direto na raiz do
+                  sistema!</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/images-traversal.png"
+                  alt="7" /></p>
+                  <p>Boom! Conseguimos explorar com sucesso o
+                  <strong>path traversal</strong>, o que nos permitiu
+                  acessar arquivos fora do diretório originalmente
+                  permitido. Agora, com acesso a locais restritos do
+                  sistema, vamos dar um passo à frente e investigar a
+                  home do usuário "corp". Vamos verificar quais arquivos
+                  ele está armazenando ali, já que podem conter
+                  informações úteis, como configurações, credenciais ou
+                  até mesmo scripts deixados para trás.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/home-corp.png"
+                  alt="8" /></p>
+                  <p>E aqui temos dois arquivos notaveis, sendo eles o
+                  user.txt e o note.txt, ao tentar abrir o user.txt, dei
+                  de cara em um 403, mas o note.txt revelou que tem um
+                  gdbserver rodando na porta 6048!</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/home-corp-note.txt.png"
+                  alt="9" /></p>
+                  <p>Agora, com essa informação, podemos acessar o alvo
+                  pelo <strong>gdb</strong>! Então, eu iniciei o
+                  <strong>gdb</strong> executando literalmente
+                  <code>**gdb**</code> no terminal e usei o target para
+                  me conectar.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/**gdb**-target.png"
+                  alt="10" /></p>
+                  <p>Agora que estamos conectados à máquina, o próximo
+                  passo foi acessar o arquivo <code>.bash_history</code>
+                  para verificar os comandos que foram executados no
+                  terminal. Esse arquivo armazena um histórico dos
+                  comandos digitados, o que pode nos fornecer
+                  informações valiosas sobre o que foi feito
+                  anteriormente na máquina. A ideia é verificar se algum
+                  dado sensível foi vazado, como senhas, tokens ou
+                  caminhos de arquivos que possam nos ajudar a avançar
+                  na exploração. Se não encontrarmos nada de
+                  interessante ali, podemos continuar nossa investigação
+                  por outras vias, mas o <code>.bash_history</code> é
+                  sempre um bom ponto de partida para descobrir
+                  atividades passadas ou descobrir falhas.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/get-password.png"
+                  alt="11" /></p>
+                  <p>Dentro do arquivo <code>.bash_history</code>,
+                  encontramos uma senha <code>corp2020</code>. Isso pode
+                  ser um grande avanço na exploração, pois agora temos
+                  credenciais que podem nos conceder acesso a outras
+                  áreas do sistema ou até mesmo a serviços protegidos.
+                  Com essa informação, podemos tentar realizar login em
+                  outras partes da máquina ou tentar abusar de
+                  permissões para escalar privilégios, caso seja
+                  necessário. Esse tipo de descoberta é um ótimo exemplo
+                  de como um simples arquivo de histórico pode revelar
+                  segredos que facilitam a exploração.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/cat-password.png"
+                  alt="12" /></p>
+                  <p>Agora que temos o usuário e a senha, vamos tentar
+                  realizar o login via <strong>SSH</strong> para obter
+                  acesso completo à máquina. No entanto, como vimos
+                  anteriormente, a porta 22, que é a porta padrão para o
+                  serviço <strong>SSH</strong>, não está aberta. Sabemos
+                  que na porta 9000 está rodando um serviço HTTP e na
+                  porta 6048 está ativo o <strong>GDB</strong> server,
+                  mas ainda temos uma dúvida... Qual serviço está
+                  rodando na porta 65200? Então, vamos verificar com o
+                  netcat:</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/**ssh**-port.png"
+                  alt="13" /></p>
+                  <p>E aí está! A porta 65200 está rodando o serviço
+                  <strong>SSH</strong>. Agora, com a porta correta
+                  identificada, vamos tentar efetuar o login
+                  <strong>SSH</strong> utilizando o usuário "corp" e a
+                  senha corp2020 que encontramos anteriormente. Com
+                  isso, teremos acesso completo à máquina e poderemos
+                  explorar ainda mais o sistema, verificando
+                  configurações, arquivos e, possivelmente, escalando
+                  privilégios para conseguir o
+                  <strong>root</strong>.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/get-**ssh**.png"
+                  alt="14" /></p>
+                  <p>Vamos aproveitar para pegar a flag!</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/get-flag-user.png"
+                  alt="15" /></p>
+                  <p>Boom... Login efetuado com sucesso! Agora que
+                  estamos dentro do sistema via <strong>SSH</strong>, o
+                  próximo passo é verificar se temos privilégios de
+                  <strong>sudo</strong>. Para isso, vamos executar o
+                  comando <code>**sudo** -l</code>, que lista os
+                  comandos que o usuário tem permissão para executar com
+                  privilégios de <strong>root</strong>. Isso nos ajuda a
+                  entender se há alguma vulnerabilidade de escalonamento
+                  de privilégios ou se podemos executar comandos
+                  críticos no sistema sem precisar de senha
+                  adicional.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/privesc-**sudo**-l.png"
+                  alt="16" /></p>
+                  <p>Bom, o resultado do <code>**sudo** -l</code>
+                  revelou algo bem interessante (e incomum) temos
+                  permissão para executar o comando kill como
+                  <strong>root</strong>, sem precisar de senha. Isso já
+                  chama atenção, pois não é nada comum conceder
+                  privilégios de <strong>root</strong> para um comando
+                  como o kill. Então, vamos dar uma olhada nas shared
+                  libs do binario kill e ver se achamos algo
+                  estranho..</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/ldd-kill.png"
+                  alt="17" /></p>
+                  <p>Uma shared lib chamada <code>libcz.so</code>,
+                  carregada junto com outras bibliotecas do sistema. O
+                  que chamou atenção é que, normalmente, esperamos ver
+                  bibliotecas padrão como libc, libpthread, libm, entre
+                  outras essenciais para o funcionamento do sistema.
+                  Porém, essa libcz.so foge do padrão e levanta
+                  suspeitas.</p>
+                  <p>Vamos dar uma olhada mais de perto nessa
+                  biblioteca. Ela pode ser uma biblioteca maliciosa,
+                  algum tipo de <strong>backdoor</strong> ou, quem sabe,
+                  parte de uma configuração customizada que pode ser
+                  explorada para nossa vantagem. Hora de investigar o
+                  conteúdo dessa libcz.so e entender o seu papel no
+                  sistema.</p>
+                  <p>Vamos pegar o arquivo libcz.so da máquina alvo e
+                  transferi-lo para a nossa máquina local, onde podemos
+                  analisá-lo com mais calma e segurança. A ideia é
+                  realizar uma engenharia reversa nessa biblioteca para
+                  entender exatamente o que ela faz, principalmente no
+                  contexto do comando <code>kill</code>, já que foi o
+                  único binário listado no <code>**sudo** -l</code> que
+                  podemos executar como <strong>root</strong>.</p>
+                  <p>Para isso, podemos utilizar ferramentas como scp
+                  para fazer a transferência do arquivo via
+                  <strong>SSH</strong>, ou até mesmo utilizar um
+                  servidor HTTP simples com
+                  <code>python -m http.server 1337</code> no alvo para
+                  baixar diretamente. Com a <code>libcz.so</code> em
+                  mãos, vamos inspecionar seu conteúdo utilizando
+                  utilitários como strings, objdump, readelf ou até
+                  abrir no Ghidra ou IDA para uma análise mais
+                  profunda.</p>
+                  <p>Nosso objetivo é identificar se essa biblioteca
+                  está sendo usada por algum wrapper no kill ou se
+                  existe alguma execução de código malicioso ou
+                  privilegiado que podemos aproveitar para ganhar acesso
+                  <strong>root</strong>.</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/disas-kill.png"
+                  alt="18" /></p>
+                  <p>Realizamos o disassembly da biblioteca
+                  <code>libcz.so</code> utilizando o comando
+                  <code>objdump -d -M intel libcz.so</code>, e logo de
+                  cara encontramos algo interessante. No endereço
+                  <code>1363</code>, o valor <code>0x539</code> está
+                  sendo salvo na pilha. Mais adiante na execução,
+                  percebemos que esse valor é utilizado como argumento
+                  para a chamada do <code>kill</code>. Até aí, poderia
+                  parecer apenas uma chamada comum, mas o comportamento
+                  dessa função vai muito além.</p>
+                  <p>Ao analisarmos a função <code>kill</code>
+                  implementada nessa biblioteca, notamos várias
+                  operações suspeitas. Ela lê entradas do usuário,
+                  compara strings, executa comandos através da função
+                  <code>system</code>, abre sockets e ainda redireciona
+                  entrada e saída de dados. Esse comportamento não é nem
+                  um pouco típico de uma simples função kill... Pelo
+                  contrário, isso cheira fortemente a
+                  <strong>backdoor</strong>!</p>
+                  <p>O padrão dessas ações indica que a biblioteca pode
+                  estar escutando comandos específicos ou manipulando
+                  dados para fornecer acesso remoto ao sistema,
+                  possivelmente concedendo privilégios elevados ou
+                  criando uma shell reversa, quando passado o argumento
+                  <code>1337</code></p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/kill-1337.png"
+                  alt="19" /></p>
+                  <p>Aha! Como esperado, conseguimos executar o
+                  <strong>backdoor</strong> embutido na
+                  <code>libcz.so</code>. Ao ativá-lo, ele solicitou uma
+                  senha de autenticação, o que já era algo previsto,
+                  considerando o comportamento suspeito que vimos
+                  durante a análise do disassembly. Porém, a proteção
+                  não foi um obstáculo, com um simples comando
+                  <code>strings libcz.so</code>, conseguimos encontrar
+                  facilmente a senha embutida na própria biblioteca. A
+                  senha é <code>dragon</code>!</p>
+                  <p>Com a senha dragon inserida no
+                  <strong>backdoor</strong>, conseguimos abrir um painel
+                  de controle oculto, que nos oferece algumas opções
+                  interessantes, incluindo a possibilidade de receber
+                  uma <strong>reverse shell</strong> diretamente da
+                  máquina alvo.</p>
+                  <p>Ao executar o comando <code>kill 1337</code>,
+                  recebemos uma <strong>reverse shell</strong>, mas ela
+                  se conecta com permissões do usuário corp. Porém, se
+                  executarmos o mesmo comando com <strong>sudo</strong>,
+                  ou seja, <code>**sudo** kill 1337</code>, a
+                  <strong>reverse shell</strong> que recebemos é com
+                  privilégios de <strong>root</strong>!</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/revshell-set.png"
+                  alt="20" /></p>
+                  <p>Então, setamos a porta e o IP para receber a
+                  <strong>reverse shell</strong> e...</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/get-root.png"
+                  alt="21" /></p>
+                  <p>BOOOOOOOM! Pegamos <strong>root</strong> na
+                  maquina! Agora é só ser feliz e pegar a sua flag de
+                  <strong>root</strong> :)</p>
+                  <p><img
+                  src="../../img/images/slayer/writeup-dragonbyte/get-root-flag.png"
+                  alt="22" /></p>
+                  <p>Obrigado por ler até aqui &amp; happy hacking!</p>
+            </article>
+            
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 12000);
+        });
+    });
+</script>
+
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../css/css-others/w.css">
+    <title>worms — pwn</title>
+    <link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header">
+            <div class="left-section">
+                <a href="../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">0xW0rms</h1>
+            <div>
+                <ul>
+                    <li>neurosys</li>
+                    <li>slayer</li>
+                    <li>kz0x <span class="worm-died">(worm died)</span></li>
+                    <li>zack</li>
+                    <li>tteuw愛</li>
+                    <li>black0ut</li>
+                    <li>nullbyte <span class="worm-died">(worm died)</span></li>
+                    <li>raidboy <span class="worm-died">(worm died)</span></li>
+                </ul>
+            </div>
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "%#$@^*&!?";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 3000);
+        });
+    });
+</script>
+
+</html>

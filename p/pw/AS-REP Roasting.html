@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>paper - Accessing AD accounts through AS-REP Roasting
+vulnerability</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Accessing AD accounts through AS-REP
+Roasting vulnerability</h1>
+            <article>
+                  <p>Pré-requisitos para conseguir facilitar o seu
+                  entendimento :</p>
+                  <ul>
+                  <li>Networking (Essencial)</li>
+                  <li>Fundamentos do Linux (Essencial)</li>
+                  <li>Fundamentos de Active Directory (Obrigatório)</li>
+                  </ul>
+                  <p>Tópicos :</p>
+                  <ul>
+                  <li>O que é Kerberos?</li>
+                  <li>O que é TGT/TGS?</li>
+                  <li>Funcionamento do Kerberos</li>
+                  <li>O que é a vulnerabilidade AS-REP Roasting?</li>
+                  <li>Exploração Prática
+                  <ul>
+                  <li>Enumerando usuários</li>
+                  <li>Procurando usuários vulneráveis</li>
+                  <li>Quebrando o hashe.</li>
+                  </ul></li>
+                  <li>Conclusão</li>
+                  </ul>
+                  <h1 id="o-que-é-kerberos">O que é Kerberos?</h1>
+                  <p>Kerberos é um protocolo de autenticação responsável
+                  pela validação dos usuários e serviços, o objetivo do
+                  Kerberos é garantir uma comunicação segura. O Kerberos
+                  utiliza de tickets para a validação dos
+                  usuários/serviços, através de uma comunicação que
+                  ocorre entre o cliente e o KDC, são enviados os
+                  famosos tickets que são blocos de dados criptografados
+                  com chaves derivadas.</p>
+                  <h1 id="o-que-é-tgttgs">O que é TGT/TGS?</h1>
+                  <p>TGT (Ticket Granting Ticket) : é um ticket que é
+                  utilizado para conseguir o TGS (Ticket Granting
+                  Service); TGS (Ticket Granting Service) : é um serviço
+                  responsável pela emissão dos tickets ao cliente após a
+                  pre-autenticação ter acontecido;</p>
+                  <h1 id="funcionamento-do-kerberos">Funcionamento do
+                  Kerberos</h1>
+                  <p>Abaixo contém um diagrama, na qual mostra o
+                  processo que ocorre na comunicação entre o cliente e o
+                  KDC;</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/1.png"
+                  alt="1" /></p>
+                  <p>Vamos começar a entender como funciona esse
+                  processo de comunicação;</p>
+                  <ol type="1">
+                  <li>O cliente vai enviar uma solicitação
+                  <strong>AS-REQ</strong> ao KDC para pedir o TGT, nessa
+                  solicitação, o cliente envia um timestamp
+                  criptografado com uma chave derivada do hashe da senha
+                  dele e o nome de usuário dele;</li>
+                  <li>O AS (Authentication Service) do KDC vai receber a
+                  solicitação do cliente, em seguida, pegar o dado
+                  recebido e consultar o banco de dados a procura do
+                  nome do usuário passado, em seguida copia o hashe da
+                  senha do usuário, e descriptografar esse timestamp, se
+                  caso sucesso, ele envia uma resposta
+                  <strong>AS-REP</strong> para o cliente com o TGT e uma
+                  chave de sessão, caso ao contrário, ela rejeita a
+                  solicitação;</li>
+                  <li>O cliente vai receber o ticket TGT e a chave de
+                  sessão e em seguida enviar outra requisição
+                  <strong>TGS-REQ</strong> com o TGT, timestamp e o nome
+                  do serviço que o cliente quer usar, só que dessa vez,
+                  o timestamp é criptografado com a chave de sessão
+                  recebida anteriormente, essa requisição é feita para
+                  conseguir utilizar o serviço; OBS: A chave de sessão é
+                  uma chave aleatória gerada pelo KDC e criptografada
+                  com uma chave derivada do hashe da senha do
+                  usuário;</li>
+                  <li>O KDC recebe essa requisição com o TGT, timestamp
+                  e o nome do serviço, em seguida, ele pega o TGT
+                  recebido e através da chave do TGS, ele faz a extração
+                  da chave de sessão que está no TGT e com ela, ele faz
+                  a descriptografia do timestamp e caso seja sucesso,
+                  ele envia uma resposta <strong>TGS-REP</strong> a
+                  solicitação do cliente com o TGS, caso ao contrário,
+                  ele rejeita a solicitação;</li>
+                  <li>O cliente recebe a resposta do KDC, e com a TGS,
+                  ele envia outra solicitação <strong>AP-REQ</strong>,
+                  só que dessa vez, para o serviço que ele quer
+                  acessar;</li>
+                  <li>O serviço ao receber a solicitação do cliente, faz
+                  a verificação localmente para ver se o certificado
+                  enviado pelo cliente, se trata de um certificado
+                  legítimo, e caso seja, ela responde a solicitação
+                  <strong>AP-REP</strong> do cliente permitindo com que
+                  ele acesse aquele serviço, caso não, ela rejeita a
+                  solicitação;</li>
+                  </ol>
+                  <h1 id="o-que-é-as-rep-roasting">O que é AS-REP
+                  Roasting?</h1>
+                  <p>AS-REP Roasting é uma vulnerabilidade que ocorre
+                  quando a flag de pre-autenticação do usuário está
+                  desabilitada permitindo assim com que um invasor
+                  receba uma resposta de autenticação sem precisar ter a
+                  senha desse usuário; Quando o invasor envia um
+                  <strong>AS-REQ</strong>, ele envia um dado com o nome
+                  do usuário que está com a flag de pre-autenticação
+                  desabilitada, e em seguida, como o KDC não faz a
+                  verificação para ver se realmente se trata do usuário,
+                  ele envia uma resposta <strong>AS-REP</strong> para o
+                  invasor com um bloco criptografado com a chave
+                  derivada do hashe da senha do usuário. Logo após, o
+                  invasor captura esse bloco e tenta quebra-lo off-line,
+                  caso consiga, ele obtém a senha real do usuário.</p>
+                  <h1 id="exploração-prática">Exploração Prática</h1>
+                  <p>Agora que você já entendeu os conceitos essenciais,
+                  vamos partir para a exploração prática; Primeiramente
+                  precisamos enumerar os usuários do Active Directory,
+                  pra isso, vamos usar uma ferramenta KerBrute, ela vai
+                  nos ajudar a enumera-los de forma mais eficiente e
+                  rápida.</p>
+                  <p>Após a execução do KerBrute, foram retornados 16
+                  usuários nesse domínio, antes de prosseguirmos, vamos
+                  entender melhor através do Wireshark o que o KerBrute
+                  fez para retornar esses usuários. <img
+                  src="../../img/images/zack/as-rep-roasting/2.png"
+                  alt="2" /><br />
+                  Usando o Wireshark, podemos ver todo o tráfego da
+                  rede, filtrando por krb5, conseguimos visualizar os
+                  pacotes que estão utilizando o Kerberos 5, o KerBrute
+                  está enviando inúmeras solicitações passando os nomes
+                  de usuários passados pelo arquivo de texto.
+                  CNameString é onde fica localizado o nome do usuário,
+                  ou seja, onde ele se identifica. Com isso, podemos ver
+                  que quando o usuário é desconhecido, o servidor
+                  retorna um erro :
+                  <strong>KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN</strong> que é
+                  uma falha que ocorre quando o servidor não reconhece o
+                  nome do usuário, então o KerBrute usa essa resposta
+                  para identificar se um usuário existe ou não.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/3.png"
+                  alt="3" /><br />
+                  Agora quando o usuário existe, o servidor não retorna
+                  um erro e sim responde a solicitação do usuário. Agora
+                  vamos usar outra ferramenta, essa vai ser responsável
+                  pela captura do bloco de dados criptografado, o nome
+                  dela é GetNPUsers; Vamos passar o arquivo de texto com
+                  os usuários válidos, ela vai percorrer cada nome e
+                  enviar uma solicitação ao KDC para ver se a flag está
+                  desabilitada.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/4.png"
+                  alt="4" /></p>
+                  <p>Veja só, ela capturou o bloco de dados
+                  criptografado, agora é só usarmos alguma ferramenta de
+                  quebra de senha, se tudo ocorrer bem, conseguiremos
+                  capturar a senha em formato legível. Mas antes, vamos
+                  analisar mais a fundo, o que essa incrível ferramenta
+                  realmente faz:</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/5.png"
+                  alt="5" /></p>
+                  <p>Analisando o tráfego, percebe-se que a ferramenta
+                  fez o envio do primeiro pacote <strong>AS-REQ</strong>
+                  para o KDC, no CNameString está o nome robin, então
+                  ela basicamente está iterando sobre a lista passada e
+                  em seguida enviando solicitações esperando uma
+                  resposta do AS do KDC. No caso ai, o AS retornou um
+                  erro, chamado
+                  <strong>KRB5KDC_ERR_PREAUTH_REQUIRED</strong>, só por
+                  esse nome já dá ter uma noção do que erro se trata,
+                  ele tá dizendo que é obrigatório a pre-autenticação,
+                  então esse usuário não está vulnerável a
+                  <strong>AS-REP</strong> Roasting, a flag de
+                  pre-autenticação dele está ativa, então o GetNPUsers
+                  vai retornar dizendo que o usuário não tem a
+                  pre-autenticação desativada. Porém, na imagem onde ele
+                  retorna um hashe, há um usuário na qual é vulnerável a
+                  essa vulnerabilidade, que é o svc-admin, vamos
+                  analisar a parte onde foi enviado com o CNameString
+                  setado como svc-admin.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/6.png"
+                  alt="6" /></p>
+                  <p>Agora olha só, parece que aqui ocorreu um sucesso,
+                  quando a nossa ferramenta envia uma solicitação
+                  <strong>AS-REQ</strong>, ao invés dele retornar um
+                  erro, ele retornou o AS-REP com o bloco de dados
+                  criptografado.</p>
+                  <p>Se analisarmos o conteúdo da resposta, encontramos
+                  exatamente o hashe retornado pelo GetNPUsers<br />
+                  <img src="../../img/images/zack/as-rep-roasting/7.png"
+                  alt="7" /><br />
+                  <img src="../../img/images/zack/as-rep-roasting/8.png"
+                  alt="8" /><br />
+                  E pronto, agora que entendemos sobre o funcionamento
+                  dessas ferramentas, vamos pegar esse bloco de dados
+                  criptografado e utilizar o hashcat para
+                  quebra-lo.<br />
+                  <img src="../../img/images/zack/as-rep-roasting/9.png"
+                  alt="9" /><br />
+                  Utilizando o grep, encontramos o formato do hashe que
+                  queremos quebrar, agora vamos executar o hashcat
+                  informando o formato, modo de quebra e a wordlist.
+                  <img
+                  src="../../img/images/zack/as-rep-roasting/10.png"
+                  alt="10" /><br />
+                  Informamos os parâmetros, executamos e olha só
+                  conseguimos quebrar o hashe, a senha em formato
+                  legível é management2005, para terminar, vamos tentar
+                  usar o serviço Samba com ela!</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/11.png"
+                  alt="11" /><br />
+                  Olha só, conseguimos acessar perfeitamente e inclusive
+                  há um arquivo com as credenciais para um possível
+                  backup, mas não é assunto para esse paper agora.</p>
+                  <h1 id="conclusão">Conclusão</h1>
+                  <p>Não sei exatamente o que por aqui, mas creio eu que
+                  você tenha aprendido bastante e entendido os conceitos
+                  e funcionamentos dessa vulnerabilidade, o objetivo
+                  desse paper foi trazer de forma "aprofundada" sobre o
+                  funcionamento dessa vulnerabilidade AS-REP Roasting,
+                  obrigado por ler até aqui e até a próxima :)</p>
+                  <p><img
+                  src="https://c.tenor.com/L6vQhcfhCZIAAAAC/tenor.gif"
+                  alt="gif" /></p>
+            </article>
+            
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 12000);
+        });
+    });
+</script>
+
+</html>

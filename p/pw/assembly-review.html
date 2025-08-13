@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>paper - Review sobre assembly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Review sobre assembly</h1>
+            <article>
+                  <h2 id="o-que-é-assembly">O que é
+                  <strong><strong>assembly</strong></strong>?</h2>
+                  <p><strong><strong>Assembly</strong></strong> é uma
+                  linguagem de programação de baixo nivel, ela é escrita
+                  para se comunicar diretamente com o hardware do
+                  <strong>processador</strong>. Ao contrário das
+                  linguagens de alto nivel, como o famoso python, o
+                  <strong><strong>assembly</strong></strong> opera
+                  próximo ao código de máquina, o famoso binário! Cada
+                  instrução em
+                  <strong><strong>assembly</strong></strong> geralmente
+                  representa uma única operação da <strong>CPU</strong>,
+                  como mover dados entre <strong>registradores</strong>,
+                  realizar operações aritméticas ou controlar o fluxo de
+                  execução.</p>
+                  <p><strong><strong>Assembly</strong></strong> não é
+                  universal!! Ele depende diretamente da arquitetura do
+                  <strong>processador</strong>. Por exemplo, um código
+                  em <strong><strong>assembly</strong></strong> feito
+                  para processadores <strong>x86</strong> não funcionará
+                  em uma arquitetura ARM, isso significa que aprender
+                  <strong><strong>assembly</strong></strong> é também
+                  aprender sobre a estrutura interna e o funcionamento
+                  da <strong>cpu</strong> em questão. Então, se você
+                  quer aprender
+                  <strong><strong>assembly</strong></strong>, papers
+                  como o do nosso membro voiiid podem te ajudar bastante
+                  nessa jornada! <a
+                  href="https://pwnbuffer.org/en/posts/void/**x86**/">https://pwnbuffer.org/en/posts/void/**x86**/</a></p>
+                  <p>Aqui está uma tabela dos
+                  <strong>registradores</strong> <strong>x86</strong> e
+                  <strong>x86_64</strong>, mostrando EAX, EBX... e seus
+                  equivalentes, RAX, RBX...</p>
+                  <div style="text-align: center;">
+                    <img src="/images/slayer/review-asm/register-table.png" alt="2">
+                  </div>
+
+                  <p><strong><strong>Assembly</strong></strong> é uma
+                  linguagem bem antiga, surgindo em meados dos anos 50,
+                  mas mesmo assim, ela é muito relevante, mas, por que
+                  ainda é relevante?</p>
+                  <p>Simplesmente porque ela é uma ferramenta essencial
+                  em várias áreas da computação, como na engenharia
+                  reversa, para analisar binários e entender softwares
+                  sem acesso ao código fonte.</p>
+                  <p><strong><strong>Assembly</strong></strong> NÃO é
+                  uma linguagem genérica! Ela reflete a arquitetura do
+                  <strong>processador</strong> que está sendo usado.
+                  Isso significa que os <strong>registradores</strong>,
+                  instruçõees e modos de endereçamento variam entre
+                  arquiteturas como <strong>x86</strong>,
+                  <strong>x86_64</strong>, ARM &amp; MIPS. Aprender
+                  <strong><strong>assembly</strong></strong> é aprender
+                  a linguagem interna do <strong>processador</strong>.
+                  Essa ligação direta torna
+                  <strong><strong>assembly</strong></strong>
+                  indnispensável para compreender como um código em C se
+                  transforma em instruções binárias e como o sistema
+                  realmente executa cada linha do código. Ele revela o
+                  que está "por baixo do tapete".</p>
+                  <p><img
+                  src="../img//images/slayer/review-asm/architecture_block.svg"
+                  alt="2" /></p>
+                  <hr />
+                  <h2 id="arquitetura-x86x86_64">Arquitetura
+                  <strong>x86</strong>/<strong>x86_64</strong></h2>
+                  <p>A principal diferença entre as arquiteturas de 32
+                  bits e de 64 bits está na largura dos
+                  <strong>registradores</strong>, ou seja, na quantidade
+                  de dados que o <strong>processador</strong> pode
+                  manipular de uma vez:</p>
+                  <ul>
+                  <li>32 bits --&gt; os <strong>registradores</strong> e
+                  os endereços são limitados a 4GB</li>
+                  <li>64 bits --&gt; os <strong>registradores</strong> e
+                  os endereços podem acessar até 16 exabytes,
+                  teoricamente (2⁶⁴) embora o limite na pratica seja
+                  muito menor</li>
+                  </ul>
+                  <p>Além do aumento da capacidade, a arquitetura
+                  <strong>x86_64</strong> traz mais
+                  <strong>registradores</strong>, o que melhora o
+                  desempenho e reduz a necessidade de acessar a memória
+                  constantemente.</p>
+                  <hr />
+                  <h3
+                  id="registradores-principais"><strong>Registradores</strong>
+                  principais</h3>
+                  <h4 id="x86"><strong>x86</strong></h4>
+                  <ul>
+                  <li>EAX, EBX, ECX, EDX --&gt;
+                  <strong>registradores</strong> gerais</li>
+                  <li>ESP --&gt; <strong>stack pointer</strong></li>
+                  <li>EBP --&gt; <strong>base pointer</strong></li>
+                  <li>ESI/EDI --&gt; cópia &amp; manipulação de
+                  memória</li>
+                  </ul>
+                  <p>Cada registrador tem 32 bits (ou seja, 4 bytes)
+                  eles também podem ser acessados parcialmente como AX,
+                  AH, AL (16 e 8 bits)</p>
+                  <hr />
+                  <h4 id="x86_64"><strong>x86_64</strong></h4>
+                  <ul>
+                  <li>todos os <strong>registradores</strong> de 32 bits
+                  foram expandidos: EAX --&gt; RAX, EBX --&gt; RBX e
+                  etc..</li>
+                  <li>adição de novos <strong>registradores</strong> R8
+                  até R15</li>
+                  <li><strong>stack pointer</strong> e <strong>base
+                  pointer</strong> também mudaram: ESP --&gt; RSP &amp;
+                  EBP --&gt; RBP</li>
+                  </ul>
+                  <p>Cada registrador agora armazena 64 bits (8 bytes) e
+                  também pode ser acessado em porções, por exemplo: RAX
+                  (64 bits), EAX (32 bits), AX (16 bits), AL (8
+                  bits)</p>
+                  <hr />
+                  <h2
+                  id="estrutura-de-um-programa-em-assembly">Estrutura de
+                  um Programa em
+                  <strong><strong>Assembly</strong></strong></h2>
+                  <p>Um programa em
+                  <strong><strong>assembly</strong></strong> geralmente
+                  é dividido em seções que organizam os dados e o
+                  código, por exemplo:</p>
+                  <ul>
+                  <li><code>.data</code> --&gt; onde ficam os dados
+                  inicializados (como as strings e variáveis com valor
+                  definido)</li>
+                  <li><code>.bss</code> --&gt; para dados não
+                  inicializados (variáveis reservadas, mas sem valor
+                  inicial)</li>
+                  <li><code>.text</code> --&gt; contém o código
+                  executável do programa</li>
+                  </ul>
+                  <pre class="assembly"><code>section .data
+    msg db &quot;Olá, Mundo!&quot;, 0Ah
+
+section .text
+    global _start
+_start:
+    ;sys write
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, msg
+    mov edx, 13
+    int 0x80
+
+    ;sys exit
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80</code></pre>
+                  <p>Esse exemplo usa chamadas de sistema do
+                  <strong>linux</strong> com <code>int 0x80</code>,
+                  válidas em sistemas de 32 bits. Ele simplesmente
+                  imprime <code>"Olá, Mundo!"</code> no terminal e
+                  depois finaliza o programa.</p>
+                  <hr />
+                  <h2 id="conceitos-chave">Conceitos Chave</h2>
+                  <ul>
+                  <li><p>Intruções comuns:</p></li>
+                  <li><p><code>MOV</code> --&gt; move dados entre
+                  <strong>registradores</strong> e memória</p></li>
+                  <li><p><code>ADD</code>, <code>SUB</code> --&gt; soma
+                  e subtração</p></li>
+                  <li><p><code>CMP</code> --&gt; compara valores (usado
+                  antes de <code>JMP</code>)</p></li>
+                  <li><p><code>JMP</code>, <code>JE</code>,
+                  <code>JNE</code>, etc. --&gt; saltos (condicionais ou
+                  não)</p></li>
+                  <li><p>Flags:</p>
+                  <ul>
+                  <li><code>ZF</code> (Zero Flag) --&gt; setada se o
+                  resultado for zero</li>
+                  <li><code>CF</code> (Carry Flag) --&gt; indica
+                  overflow em operações sem sinal</li>
+                  <li><code>SF</code> (Sign Flag) --&gt; indica se o
+                  resultado é negativo</li>
+                  <li><code>OF</code> (Overflow Flag) --&gt; indica
+                  overflow em operações com sinal</li>
+                  </ul></li>
+                  <li><p>Stack:</p>
+                  <ul>
+                  <li><code>PUSH</code> --&gt; coloca um valor na
+                  stack</li>
+                  <li><code>POP</code> --&gt; remove o topo da
+                  stack</li>
+                  <li><code>CALL</code> --&gt; empilha o endereço de
+                  retorno e salta para a função</li>
+                  <li><code>RET</code> --&gt; retorna da função para o
+                  endereço salvo</li>
+                  </ul></li>
+                  </ul>
+                  <pre class="asm"><code>section .data
+    msg db &quot;exec func!&quot;, 0Ah
+    len equ $ - msg
+
+section .text
+    global _start
+
+_start:
+    call message
+
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+
+message:
+    push eax
+    push ebx
+
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, msg
+    mov edx, len
+    int 0x80
+
+    pop ebx
+    pop eax
+    ret</code></pre>
+                  <p>Nesse exemplo, o programa chama a função
+                  <code>message</code> usando <code>CALL</code>, que
+                  automaticamente faz um <code>PUSH</code> do endereço
+                  de retorno.</p>
+                  <p>Dentro da função:</p>
+                  <ul>
+                  <li>Os <strong>registradores</strong> <code>eax</code>
+                  &amp; <code>ebx</code> são salvos com
+                  <code>PUSH</code></li>
+                  <li>A <strong>syscall</strong> <code>write</code>
+                  imprime <code>"exec func!"</code></li>
+                  <li>Depois, <code>POP</code> restaura os
+                  <strong>registradores</strong> originais</li>
+                  <li>E o <code>RET</code> volta para depois do
+                  <code>CALL</code>, onde o programa continua</li>
+                  </ul>
+                  <hr />
+                  <h2 id="calling-conventions">Calling Conventions</h2>
+                  <p>As calling conventions definem como funções recebem
+                  argumentos, retornam valores e manipulam a stack, são
+                  essas as regras que garantem compatibilidade entre
+                  codigos <strong><strong>assembly</strong></strong> e
+                  outras linguagens como C!</p>
+                  <h3 id="main-conventions">Main Conventions</h3>
+                  <ul>
+                  <li><p><code>cdecl</code> --&gt; C declaration, comum
+                  no <strong>linux</strong> 32 bits</p>
+                  <ul>
+                  <li>argumentos: passados na stack, da direita pra
+                  esquerda</li>
+                  <li>responsável por limpar a stack: quem chama a
+                  função <code>caller</code></li>
+                  <li>retorno: via <code>EAX</code></li>
+                  <li>muito usada com: GCC, linguagens C/C++</li>
+                  </ul></li>
+                  <li><p><code>stdcall</code> --&gt; Comum no
+                  <strong>windows</strong> 32 bits</p>
+                  <ul>
+                  <li>argumentos: passados na stack, da direita pra
+                  esquerda</li>
+                  <li>responsável por limpar a stack: a função chamada
+                  <code>callee</code></li>
+                  <li>retorno: via <code>EAX</code></li>
+                  <li>muito usada com: APIs do
+                  <strong>windows</strong></li>
+                  </ul></li>
+                  <li><p><code>sycv</code> --&gt; System V AMD64 ABI,
+                  padrão no <strong>linux</strong> 64 bits</p>
+                  <ul>
+                  <li>argumentos: via <strong>registradores</strong>,
+                  nesta ordem:
+                  <ul>
+                  <li><code>RDI</code>, <code>RSI</code>,
+                  <code>RDX</code>, <code>RCX</code>, <code>R8</code>,
+                  <code>R9</code></li>
+                  <li>extras vão para a stack</li>
+                  </ul></li>
+                  <li>retorno: via <code>RAX</code></li>
+                  <li>responsável por salvar
+                  <strong>registradores</strong> temporários:
+                  <code>caller</code></li>
+                  </ul></li>
+                  </ul>
+                  <h3 id="resumão-visual">Resumão visual:</h3>
+                  <table>
+                  <thead>
+                  <tr class="header">
+                  <th>Convenção</th>
+                  <th>Plataforma</th>
+                  <th>Argumentos via</th>
+                  <th>Retorno</th>
+                  <th>Quem limpa a pilha</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr class="odd">
+                  <td><code>cdecl</code></td>
+                  <td><strong>Linux</strong> 32bit</td>
+                  <td>Pilha (dir → esq)</td>
+                  <td>EAX</td>
+                  <td>Quem chama</td>
+                  </tr>
+                  <tr class="even">
+                  <td><code>stdcall</code></td>
+                  <td><strong>Windows</strong> 32b</td>
+                  <td>Pilha (dir → esq)</td>
+                  <td>EAX</td>
+                  <td>Função chamada</td>
+                  </tr>
+                  <tr class="odd">
+                  <td><code>sysv</code></td>
+                  <td><strong>Linux</strong> 64bit</td>
+                  <td><strong>Registradores</strong> + pilha</td>
+                  <td>RAX</td>
+                  <td>Quem chama</td>
+                  </tr>
+                  </tbody>
+                  </table>
+                  <p>Bom, chegamos ao final de mais um paper, muito
+                  obrigado por ler até aqui! Espero ter te ajudado em
+                  algo, e segue as fontes que utilizei para criar este
+                  artigo! ;)</p>
+                  <hr />
+                  <p>Fontes usadas para a construção deste artigo:</p>
+                  <ul>
+                  <li><a
+                  href="https://en.wikipedia.org/wiki/Assembly_language"><strong>Assembly</strong>
+                  Language - Wikipedia</a></li>
+                  <li><a
+                  href="https://tecnoblog.net/responde/**processador**-64-bits-vs-32-bits-diferencas/"><strong>Processador</strong>
+                  64 bits vs 32 bits - Tecnoblog</a></li>
+                  <li><a
+                  href="https://cs.lmu.edu/~ray/notes/x86overview/"><strong>x86</strong>
+                  overview - cs.lmu.edu</a></li>
+                  <li><a
+                  href="https://www.tutorialspoint.com/assembly_programming/assembly_quick_guide.htm"><strong>Assembly</strong>
+                  quick guide - tutorialspoint</a></li>
+                  <li><a
+                  href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">Intel®
+                  64 and IA-32 Architectures Developer Manuals (PDFs
+                  oficiais)</a></li>
+                  <li><a
+                  href="https://en.wikipedia.org/wiki/Calling_convention">Calling
+                  Conventions - Wikipedia</a></li>
+                  <li><a href="https://www.nasm.us/doc/">NASM
+                  Documentation</a></li>
+                  </ul>
+            </article>
+            
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 12000);
+        });
+    });
+</script>
+
+</html>

@@ -1,0 +1,240 @@
+body {
+    background-color: #000;
+    margin: 0;
+    padding: 0;
+    font-family: 'Fira Code', monospace;
+    font-style: bold;
+    color: #fff;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.main_container {
+    max-width: 900px;
+    width: 100%;
+    margin: 20px;
+    padding: 20px;
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border: 1px solid #3b3b3b;
+    font-size: 0.85rem;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.left-section, .right-section {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+
+.menu-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.menu-link:hover {
+    color: #a70000;
+    opacity: 1;
+    background-color: rgba(255, 0, 51, 0.1);
+}
+
+.menu-link::before {
+    content: ' > ';
+    position: absolute;
+    left: -13px;
+    color: #fff;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.menu-link:hover::before {
+    opacity: 1;
+    left: -10px;
+}
+
+
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .left-section, .right-section {
+        width: 100%;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .menu-link {
+        font-size: 1rem;
+        padding: 6px 10px;
+    }
+}
+
+
+.glitch-text {
+    font-family: 'Fira Code', monospace;
+    font-weight: bold;
+    color: #a70000;
+    text-shadow: 0 0 10px #a70000;
+    display: inline-block;
+}
+
+.message-center {
+    font-size: 12px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.ascii-art {
+    margin: 40px 0;
+    text-align: center;
+    line-height: 1.2;
+    font-size: clamp(0.4rem, 2vw, 0.8rem);
+    letter-spacing: 1px;
+    color: #ff0000;
+}
+
+.ascii-art img {
+    max-width: 100%;
+    height: auto;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-10px) rotate(-1deg); }
+    50% { transform: translateY(5px) rotate(1deg); }
+    75% { transform: translateY(-5px) rotate(0deg); }
+}
+
+@keyframes ascii-blink {
+    0%, 20%, 100% { opacity: 1; }
+    10% { opacity: 0; }
+}
+
+.hair {
+    animation: wave 3s infinite alternate;
+}
+
+@keyframes wave {
+    0% { transform: skewX(0deg); }
+    100% { transform: skewX(5deg); }
+}
+
+
+.terminal {
+    margin: 30px auto;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+}
+
+.terminal::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 1px solid #fff;
+    z-index: -1;
+    animation: pulse 4s infinite alternate;
+    opacity: 0.3;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 10px rgba(255,255,255,0.08); }
+    50% { box-shadow: 0 0 18px rgba(255,255,255,0.12); }
+    100% { box-shadow: 0 0 12px rgba(255,255,255,0.10); }
+}
+
+@keyframes glitch {
+    0% { text-shadow: 0 0 5px #a70000; }
+    25% { text-shadow: -2px 0 5px #cc0022, 2px 0 5px #990011; }
+    50% { text-shadow: 2px 0 5px #ff2255, -2px 0 5px #cc0022; }
+    75% { text-shadow: -2px 0 5px #990011, 2px 0 5px #ff1122; }
+    100% { text-shadow: 0 0 8px #a70000; }
+}
+
+.footer {
+    background-color: #000;
+    width: 100%;
+    color: #fff;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.85rem;
+    border-top: 1px solid #353535;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-link {
+    color: #a70000;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 0 0 10px #a70000;
+}
+
+.footer-link:hover {
+    color: #fff;
+    text-shadow: 0 0 10px #fff;
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-separator {
+    opacity: 0.5;
+}
+
+.footer-link,
+.footer-separator,
+.footer-content span {
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 6px;
+    }
+        .footer-separator {
+        display: none;
+    }
+}

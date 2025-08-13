@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../css/css-others/a.css">
+    <title>about — pwn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header">
+            <div class="left-section">
+                <a href="../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">0xPwnbuffer</h1>
+            <div>
+                <p>
+                    Somos um grupo brasileiro de ativistas de computação.
+                </p>
+                <h3>“Acreditamos que o conhecimento deve ser livre”</h3>
+            </div>
+            <a href="/PwnBuffer/index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://www.freebsd.org/" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://github.com/" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const els = document.querySelectorAll(".glitch-text, .pwntitle");
+    const chars = "%#$@^*&!?";
+
+    els.forEach(el => {
+        const originalText = el.textContent;
+
+        function glitchEffect() {
+            let iterations = 0;
+            const interval = setInterval(() => {
+                el.textContent = originalText
+                    .split("")
+                    .map((letter, index) => {
+                        if (index < iterations) {
+                            return originalText[index];
+                        }
+                        return chars[Math.floor(Math.random() * chars.length)];
+                    })
+                    .join("");
+
+                iterations += 1 / 2;
+
+                if (iterations >= originalText.length) {
+                    clearInterval(interval);
+                    el.textContent = originalText;
+                }
+            }, 50);
+        }
+
+        setInterval(glitchEffect, 3000);
+    });
+});
+</script>
+
+</html>

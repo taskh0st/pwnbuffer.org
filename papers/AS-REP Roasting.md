@@ -49,13 +49,17 @@ Quando o invasor envia um **AS-REQ**, ele envia um dado com o nome do usuário q
 Agora que você já entendeu os conceitos essenciais, vamos partir para a exploração prática;
 Primeiramente precisamos enumerar os usuários do Active Directory, pra isso, vamos usar uma ferramenta KerBrute, ela vai nos ajudar a enumera-los de forma mais eficiente e rápida.
 
-Após a execução do KerBrute, foram retornados 16 usuários nesse domínio, antes de prosseguirmos, vamos entender melhor através do Wireshark o que o KerBrute fez para retornar esses usuários.
 ![2](../../img/images/zack/as-rep-roasting/2.png)  
+
+Após a execução do KerBrute, foram retornados 16 usuários nesse domínio, antes de prosseguirmos, vamos entender melhor através do Wireshark o que o KerBrute fez para retornar esses usuários.  
+
+![3](../../img/images/zack/as-rep-roasting/3.png)  
+
+
 Usando o Wireshark, podemos ver todo o tráfego da rede, filtrando por krb5, conseguimos visualizar os pacotes que estão utilizando o Kerberos 5, o KerBrute está enviando inúmeras solicitações passando os nomes de usuários passados pelo arquivo de texto.
 CNameString é onde fica localizado o nome do usuário, ou seja, onde ele se identifica.
 Com isso, podemos ver que quando o usuário é desconhecido, o servidor retorna um erro : **KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN** que é uma falha que ocorre quando o servidor não reconhece o nome do usuário, então o KerBrute usa essa resposta para identificar se um usuário existe ou não.
 
-![3](../../img/images/zack/as-rep-roasting/3.png)  
 Agora quando o usuário existe, o servidor não retorna um erro e sim responde a solicitação do usuário.
 Agora vamos usar outra ferramenta, essa vai ser responsável pela captura do bloco de dados criptografado, o nome dela é GetNPUsers;
 Vamos passar o arquivo de texto com os usuários válidos, ela vai percorrer cada nome e enviar uma solicitação ao KDC para ver se a flag está desabilitada.
@@ -73,19 +77,28 @@ Porém, na imagem onde ele retorna um hashe, há um usuário na qual é vulnerá
 
 ![6](../../img/images/zack/as-rep-roasting/6.png)  
 
-Agora olha só, parece que aqui ocorreu um sucesso, quando a nossa ferramenta envia uma solicitação **AS-REQ**, ao invés dele retornar um erro, ele retornou o AS-REP com o bloco de dados criptografado.
+Agora olha só, parece que aqui ocorreu um sucesso, quando a nossa ferramenta envia uma solicitação **AS-REQ**, ao invés dele retornar um erro, ele retornou o `AS-REP` com o bloco de dados criptografado.
+
+![7](../../img/images/zack/as-rep-roasting/7.png)  
 
 Se analisarmos o conteúdo da resposta, encontramos exatamente o hashe retornado pelo GetNPUsers   
-![7](../../img/images/zack/as-rep-roasting/7.png)  
+
 ![8](../../img/images/zack/as-rep-roasting/8.png)  
 E pronto, agora que entendemos sobre o funcionamento dessas ferramentas, vamos pegar esse bloco de dados criptografado e utilizar o hashcat para quebra-lo.  
 ![9](../../img/images/zack/as-rep-roasting/9.png)  
-Utilizando o grep, encontramos o formato do hashe que queremos quebrar, agora vamos executar o hashcat informando o formato, modo de quebra e a wordlist.
-![10](../../img/images/zack/as-rep-roasting/10.png)  
-Informamos os parâmetros, executamos e olha só conseguimos quebrar o hashe, a senha em formato legível é management2005, para terminar, vamos tentar usar o serviço Samba com ela!
 
+![10](../../img/images/zack/as-rep-roasting/10.png)  
+
+
+Utilizando o grep, encontramos o formato do hashe que queremos quebrar, agora vamos executar o hashcat informando o formato, modo de quebra e a wordlist.
 
 ![11](../../img/images/zack/as-rep-roasting/11.png)  
+
+Informamos os parâmetros, executamos e olha só conseguimos quebrar o hashe, a senha em formato legível é management2005, para terminar, vamos tentar usar o serviço Samba com ela!
+
+![12](../../img/images/zack/as-rep-roasting/12.png)  
+
+
 Olha só, conseguimos acessar perfeitamente e inclusive há um arquivo com as credenciais para um possível backup, mas não é assunto para esse paper agora.
 
 # Conclusão

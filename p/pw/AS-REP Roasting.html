@@ -167,13 +167,17 @@ Roasting vulnerability</h1>
                   pra isso, vamos usar uma ferramenta KerBrute, ela vai
                   nos ajudar a enumera-los de forma mais eficiente e
                   rápida.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/2.png"
+                  alt="2" /></p>
                   <p>Após a execução do KerBrute, foram retornados 16
                   usuários nesse domínio, antes de prosseguirmos, vamos
                   entender melhor através do Wireshark o que o KerBrute
-                  fez para retornar esses usuários. <img
-                  src="../../img/images/zack/as-rep-roasting/2.png"
-                  alt="2" /><br />
-                  Usando o Wireshark, podemos ver todo o tráfego da
+                  fez para retornar esses usuários.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/3.png"
+                  alt="3" /></p>
+                  <p>Usando o Wireshark, podemos ver todo o tráfego da
                   rede, filtrando por krb5, conseguimos visualizar os
                   pacotes que estão utilizando o Kerberos 5, o KerBrute
                   está enviando inúmeras solicitações passando os nomes
@@ -186,17 +190,14 @@ Roasting vulnerability</h1>
                   uma falha que ocorre quando o servidor não reconhece o
                   nome do usuário, então o KerBrute usa essa resposta
                   para identificar se um usuário existe ou não.</p>
-                  <p><img
-                  src="../../img/images/zack/as-rep-roasting/3.png"
-                  alt="3" /><br />
-                  Agora quando o usuário existe, o servidor não retorna
-                  um erro e sim responde a solicitação do usuário. Agora
-                  vamos usar outra ferramenta, essa vai ser responsável
-                  pela captura do bloco de dados criptografado, o nome
-                  dela é GetNPUsers; Vamos passar o arquivo de texto com
-                  os usuários válidos, ela vai percorrer cada nome e
-                  enviar uma solicitação ao KDC para ver se a flag está
-                  desabilitada.</p>
+                  <p>Agora quando o usuário existe, o servidor não
+                  retorna um erro e sim responde a solicitação do
+                  usuário. Agora vamos usar outra ferramenta, essa vai
+                  ser responsável pela captura do bloco de dados
+                  criptografado, o nome dela é GetNPUsers; Vamos passar
+                  o arquivo de texto com os usuários válidos, ela vai
+                  percorrer cada nome e enviar uma solicitação ao KDC
+                  para ver se a flag está desabilitada.</p>
                   <p><img
                   src="../../img/images/zack/as-rep-roasting/4.png"
                   alt="4" /></p>
@@ -234,36 +235,42 @@ Roasting vulnerability</h1>
                   <p>Agora olha só, parece que aqui ocorreu um sucesso,
                   quando a nossa ferramenta envia uma solicitação
                   <strong>AS-REQ</strong>, ao invés dele retornar um
-                  erro, ele retornou o AS-REP com o bloco de dados
-                  criptografado.</p>
+                  erro, ele retornou o <code>AS-REP</code> com o bloco
+                  de dados criptografado.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/7.png"
+                  alt="7" /></p>
                   <p>Se analisarmos o conteúdo da resposta, encontramos
-                  exatamente o hashe retornado pelo GetNPUsers<br />
-                  <img src="../../img/images/zack/as-rep-roasting/7.png"
-                  alt="7" /><br />
-                  <img src="../../img/images/zack/as-rep-roasting/8.png"
+                  exatamente o hashe retornado pelo GetNPUsers</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/8.png"
                   alt="8" /><br />
                   E pronto, agora que entendemos sobre o funcionamento
                   dessas ferramentas, vamos pegar esse bloco de dados
                   criptografado e utilizar o hashcat para
                   quebra-lo.<br />
                   <img src="../../img/images/zack/as-rep-roasting/9.png"
-                  alt="9" /><br />
-                  Utilizando o grep, encontramos o formato do hashe que
-                  queremos quebrar, agora vamos executar o hashcat
-                  informando o formato, modo de quebra e a wordlist.
-                  <img
+                  alt="9" /></p>
+                  <p><img
                   src="../../img/images/zack/as-rep-roasting/10.png"
-                  alt="10" /><br />
-                  Informamos os parâmetros, executamos e olha só
+                  alt="10" /></p>
+                  <p>Utilizando o grep, encontramos o formato do hashe
+                  que queremos quebrar, agora vamos executar o hashcat
+                  informando o formato, modo de quebra e a wordlist.</p>
+                  <p><img
+                  src="../../img/images/zack/as-rep-roasting/11.png"
+                  alt="11" /></p>
+                  <p>Informamos os parâmetros, executamos e olha só
                   conseguimos quebrar o hashe, a senha em formato
                   legível é management2005, para terminar, vamos tentar
                   usar o serviço Samba com ela!</p>
                   <p><img
-                  src="../../img/images/zack/as-rep-roasting/11.png"
-                  alt="11" /><br />
-                  Olha só, conseguimos acessar perfeitamente e inclusive
-                  há um arquivo com as credenciais para um possível
-                  backup, mas não é assunto para esse paper agora.</p>
+                  src="../../img/images/zack/as-rep-roasting/12.png"
+                  alt="12" /></p>
+                  <p>Olha só, conseguimos acessar perfeitamente e
+                  inclusive há um arquivo com as credenciais para um
+                  possível backup, mas não é assunto para esse paper
+                  agora.</p>
                   <h1 id="conclusão">Conclusão</h1>
                   <p>Não sei exatamente o que por aqui, mas creio eu que
                   você tenha aprendido bastante e entendido os conceitos

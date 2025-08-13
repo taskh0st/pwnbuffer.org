@@ -215,8 +215,10 @@ pre > code {
     max-width: 100%;
     height: auto;
     margin: 1.5em 0;
+    cursor: pointer;
     border-radius: 8px;
     box-shadow: 0 0 5px #a70000;
+    transition: transform 0.3s ease;
 }
 
 table {
@@ -451,3 +453,41 @@ blockquote {
   padding-left: 16px;
 }
 ul, ol { margin: 0.9em 0 0.9em 1.25em; }
+
+
+
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    z-index: 9998;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.zoomed-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-out;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+}
+
+
+.zoomed-img.zoomed {
+    transform: scale(1.5);
+}
+
+
+#overlay img.zoomed-img {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+}

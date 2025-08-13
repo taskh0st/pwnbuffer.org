@@ -57,19 +57,21 @@ Após a execução do KerBrute, foram retornados 16 usuários nesse domínio, an
 
 
 Usando o Wireshark, podemos ver todo o tráfego da rede, filtrando por krb5, conseguimos visualizar os pacotes que estão utilizando o Kerberos 5, o KerBrute está enviando inúmeras solicitações passando os nomes de usuários passados pelo arquivo de texto.
-CNameString é onde fica localizado o nome do usuário, ou seja, onde ele se identifica.
-Com isso, podemos ver que quando o usuário é desconhecido, o servidor retorna um erro : **KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN** que é uma falha que ocorre quando o servidor não reconhece o nome do usuário, então o KerBrute usa essa resposta para identificar se um usuário existe ou não.
+CNameString é onde fica localizado o nome do usuário, ou seja, onde ele se identifica.  
+Com isso, podemos ver que quando o usuário é desconhecido, o servidor retorna um erro: **KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN** que é uma falha que ocorre quando o servidor não reconhece o nome do usuário, então o KerBrute usa essa resposta para identificar se um usuário existe ou não.
 
 Agora quando o usuário existe, o servidor não retorna um erro e sim responde a solicitação do usuário.
 Agora vamos usar outra ferramenta, essa vai ser responsável pela captura do bloco de dados criptografado, o nome dela é GetNPUsers;
 Vamos passar o arquivo de texto com os usuários válidos, ela vai percorrer cada nome e enviar uma solicitação ao KDC para ver se a flag está desabilitada.
+
+![5](../../img/images/zack/as-rep-roasting/5.png)  
 
 ![4](../../img/images/zack/as-rep-roasting/4.png)  
 
 Veja só, ela capturou o bloco de dados criptografado, agora é só usarmos alguma ferramenta de quebra de senha, se tudo ocorrer bem, conseguiremos capturar a senha em formato legível.
 Mas antes, vamos analisar mais a fundo, o que essa incrível ferramenta realmente faz:
 
-![5](../../img/images/zack/as-rep-roasting/5.png)  
+
 
 Analisando o tráfego, percebe-se que a ferramenta fez o envio do primeiro pacote **AS-REQ** para o KDC, no CNameString está o nome robin, então ela basicamente está iterando sobre a lista passada e em seguida enviando solicitações esperando uma resposta do AS do KDC.
 No caso ai, o AS retornou um erro, chamado **KRB5KDC_ERR_PREAUTH_REQUIRED**, só por esse nome já dá ter uma noção do que erro se trata, ele tá dizendo que é obrigatório a pre-autenticação, então esse usuário não está vulnerável a **AS-REP** Roasting, a flag de pre-autenticação dele está ativa, então o GetNPUsers vai retornar dizendo que o usuário não tem a pre-autenticação desativada.

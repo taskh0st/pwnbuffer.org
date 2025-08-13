@@ -12,7 +12,7 @@ Neste paper, irei fazer o passo a passo para a room Dragon Byte, feita pelo mano
 
 Após iniciar a maquina e obter o IP, a primeira coisa que devemos fazer é o port scanning. Neste CTF utilizei a ferramenta **RustScan** para fazer o port scanning:
 
-![1](../../img/images/slayer/writeup-dragonbyte/**rustscan**.png)
+![1](../../img/images/slayer/writeup-dragonbyte/rustscan.png)
 
 Esse scan revelou que temos 3 portas abertas, sendo elas:
 
@@ -28,7 +28,7 @@ Assim que acessamos a URL, nos deparamos com a página padrão do **Nginx**, o q
 
 Diante disso, uma abordagem interessante é realizar um directory fuzzing, com o objetivo de descobrir se existem outros diretórios ou arquivos acessíveis além dessa página inicial padrão. Aqui iremos usar o **gobuster** para fazer este directory fuzzing
 
-![3](../../img/images/slayer/writeup-dragonbyte/**gobuster**.png)
+![3](../../img/images/slayer/writeup-dragonbyte/gobuster.png)
 
 Após realizar o bruteforce de diretórios com o **gobuster**, conseguimos identificar a existência de um diretório chamado `/corp` no servidor. Com essa descoberta, o próximo passo é acessar esse diretório pelo navegador para visualizar o conteúdo que ele disponibiliza!
 
@@ -38,7 +38,7 @@ Ao acessarmos o diretório /corp, nos deparamos com um deface exibindo a mensage
 
 Enfim, agora que sabemos da existência do diretório /corp e que esse alvo já foi comprometido anteriormente (como vimos no deface deixado por "Dragon Byte"), é um bom indicativo de que podem existir outros arquivos ou diretórios ocultos por ali. Muitas vezes, após uma invasão, os atacantes deixam backdoors, ferramentas ou arquivos sensíveis que podem ser úteis para uma análise mais aprofundada ou até para facilitar o acesso ao sistema. Sendo assim, vamos realizar um novo directory fuzzing especificamente dentro do diretório /corp, utilizando o **Gobuster**, para tentar identificar possíveis recursos ocultos que possam nos fornecer mais informações ou abrir novas possibilidades de exploração.
 
-![5](../../img/images/slayer/writeup-dragonbyte/**gobuster**-corp.png)
+![5](../../img/images/slayer/writeup-dragonbyte/gobuster-corp.png)
 
 E voilà! Durante o directory fuzzing no diretório `/corp`, encontramos um novo caminho interessante, o `/images`. Ao acessá-lo, percebemos que há um index listing habilitado, o famoso index of, permitindo a visualização direta dos arquivos presentes nesse diretório sem qualquer tipo de restrição ou autenticação.
 
@@ -82,7 +82,7 @@ E aqui temos dois arquivos notaveis, sendo eles o user.txt e o note.txt, ao tent
 
 Agora, com essa informação, podemos acessar o alvo pelo **gdb**! Então, eu iniciei o **gdb** executando literalmente `**gdb**` no terminal e usei o target para me conectar.
 
-![10](../../img/images/slayer/writeup-dragonbyte/**gdb**-target.png)
+![10](../../img/images/slayer/writeup-dragonbyte/gdb-target.png)
 
 Agora que estamos conectados à máquina, o próximo passo foi acessar o arquivo `.bash_history` para verificar os comandos que foram executados no terminal. Esse arquivo armazena um histórico dos comandos digitados, o que pode nos fornecer informações valiosas sobre o que foi feito anteriormente na máquina. A ideia é verificar se algum dado sensível foi vazado, como senhas, tokens ou caminhos de arquivos que possam nos ajudar a avançar na exploração. Se não encontrarmos nada de interessante ali, podemos continuar nossa investigação por outras vias, mas o `.bash_history` é sempre um bom ponto de partida para descobrir atividades passadas ou descobrir falhas.
 
@@ -94,11 +94,11 @@ Dentro do arquivo `.bash_history`, encontramos uma senha `corp2020`. Isso pode s
 
 Agora que temos o usuário e a senha, vamos tentar realizar o login via **SSH** para obter acesso completo à máquina. No entanto, como vimos anteriormente, a porta 22, que é a porta padrão para o serviço **SSH**, não está aberta. Sabemos que na porta 9000 está rodando um serviço HTTP e na porta 6048 está ativo o **GDB** server, mas ainda temos uma dúvida... Qual serviço está rodando na porta 65200? Então, vamos verificar com o netcat:
 
-![13](../../img/images/slayer/writeup-dragonbyte/**ssh**-port.png)
+![13](../../img/images/slayer/writeup-dragonbyte/ssh-port.png)
 
 E aí está! A porta 65200 está rodando o serviço **SSH**. Agora, com a porta correta identificada, vamos tentar efetuar o login **SSH** utilizando o usuário "corp" e a senha corp2020 que encontramos anteriormente. Com isso, teremos acesso completo à máquina e poderemos explorar ainda mais o sistema, verificando configurações, arquivos e, possivelmente, escalando privilégios para conseguir o **root**.
 
-![14](../../img/images/slayer/writeup-dragonbyte/get-**ssh**.png)
+![14](../../img/images/slayer/writeup-dragonbyte/get-ssh.png)
 
 Vamos aproveitar para pegar a flag!
 
@@ -106,7 +106,7 @@ Vamos aproveitar para pegar a flag!
 
 Boom... Login efetuado com sucesso! Agora que estamos dentro do sistema via **SSH**, o próximo passo é verificar se temos privilégios de **sudo**. Para isso, vamos executar o comando `**sudo** -l`, que lista os comandos que o usuário tem permissão para executar com privilégios de **root**. Isso nos ajuda a entender se há alguma vulnerabilidade de escalonamento de privilégios ou se podemos executar comandos críticos no sistema sem precisar de senha adicional.
 
-![16](../../img/images/slayer/writeup-dragonbyte/privesc-**sudo**-l.png)
+![16](../../img/images/slayer/writeup-dragonbyte/privesc-sudo-l.png)
 
 Bom, o resultado do `**sudo** -l` revelou algo bem interessante (e incomum) temos permissão para executar o comando kill como **root**, sem precisar de senha. Isso já chama atenção, pois não é nada comum conceder privilégios de **root** para um comando como o kill. Então, vamos dar uma olhada nas shared libs do binario kill e ver se achamos algo estranho..
 

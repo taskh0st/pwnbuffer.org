@@ -12,7 +12,7 @@ author: "slayer"
 Aqui está uma tabela dos **registradores** **x86** e **x86_64**, mostrando EAX, EBX... e seus equivalentes, RAX, RBX...
 
 <div style="text-align: center;">
-  <img src="/images/slayer/review-asm/register-table.png" alt="2">
+  <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.packt-cdn.com%2Fproducts%2F9781789610789%2Fgraphics%2Fassets%2F1309d9ef-7564-4b7c-a31f-ce510cfb19e5.png&f=1&nofb=1&ipt=80b8a64215d6cd410ba4880b58eb6b47689ba30cd33818b5e6168189b53d9cee" alt="2">
 </div>
 
 ****Assembly**** é uma linguagem bem antiga, surgindo em meados dos anos 50, mas mesmo assim, ela é muito relevante, mas, por que ainda é relevante?
@@ -21,7 +21,7 @@ Simplesmente porque ela é uma ferramenta essencial em várias áreas da computa
 
 ****Assembly**** NÃO é uma linguagem genérica! Ela reflete a arquitetura do **processador** que está sendo usado. Isso significa que os **registradores**, instruçõees e modos de endereçamento variam entre arquiteturas como **x86**, **x86_64**, ARM & MIPS. Aprender ****assembly**** é aprender a linguagem interna do **processador**. Essa ligação direta torna ****assembly**** indnispensável para compreender como um código em C se transforma em instruções binárias e como o sistema realmente executa cada linha do código. Ele revela o que está "por baixo do tapete".
 
-![2](../img//images/slayer/review-asm/architecture_block.svg)
+<!-- ![2](../img//images/slayer/review-asm/architecture_block.svg) -->
 
 ***
 

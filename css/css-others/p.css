@@ -93,9 +93,9 @@ h1, h2, h3, h4, h5 {
 }
 
 .list-papers ul {
-    list-style: none; /* remove as bolinhas */
-    padding-left: 0;  /* remove o recuo padrão */
-    margin: 0;        /* remove o espaçamento extra */
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
 }
 
 .list-papers li {

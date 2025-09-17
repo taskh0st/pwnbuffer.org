@@ -262,7 +262,7 @@ table thead th {
 
 hr {
   border: 0;
-  border-top: 1px dotted rgb(167, 0, 0); /* vermelho mais claro via transparência */
+  border-top: 1px dotted rgb(167, 0, 0);
   margin: 2em 0;
 }
 

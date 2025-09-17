@@ -1,9 +1,18 @@
+@font-face {
+  font-family: "gohu";
+  src: url("../fonts/gohu.woff2") format("woff2"),
+       url("../fonts/gohu.woff") format("woff"),
+       url("../fonts/gohu.woff") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 body {
     background-color: #000;
     margin: 0;
     padding: 0;
-    font-family: 'Fira Code', monospace;
-
+    font-family: 'gohu', sans-serif !important;
     color: #eee;
     overflow-x: hidden;
     display: flex;
@@ -85,7 +94,7 @@ body {
 }
 
 .glitch-text {
-    font-family: 'Fira Code', monospace;
+    font-family: 'gohu', sans-serif;
     font-weight: bold;
     color: #a70000;
     text-shadow: 0 0 10px #a70000;
@@ -147,13 +156,13 @@ body {
 }
 
 blockquote {
-    border-left: 4px solid #b30000;
-    padding-left: 16px;
+    border-left: 3px solid #b30000ab;
+    padding-left: 8px;
+    font-weight: bold;
     margin: 1.5em 0;
-    color: #a70000;
+    color: #ffffff;
     font-style: italic;
     background-color: #111111;
-    border-radius: 4px;
     padding: 2px 0 2px 18px;
 }
 
@@ -168,30 +177,42 @@ ul li, ol li {
 }
 
 pre {
+    font-family: 'gohu', sans-serif;
     padding: 15px 20px;
-    border-radius: 6px;
+    font-weight: bold;
     overflow-x: auto;
     font-size: 0.9rem;
-    line-height: 1.4;
     margin: 1.5em 0;
     border: 1px solid rgba(255, 255, 255, 0.36); 
+    background: #0a0a0a;
+}
+
+.ascii-md > code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco,
+               "Roboto Mono", "Courier New", monospace !important;
+  white-space: pre;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 
-
 pre > code {
+    font-family: 'gohu', sans-serif;
+    font-weight: bold;
     padding: 0;
-    background: transparent;
+    background: #0a0a0a;
     display: block;
 }
 
 :not(pre) > code {
-    font-family: 'Fira Code', monospace;
+    font-family: 'gohu', sans-serif;
     background-color: #151515;
-    color: #a70000;
+    color: #e10000;
+    font-weight: bold;
     padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.95rem;
+    font-size: 16px;
 }
 
 
@@ -215,8 +236,7 @@ pre > code {
     max-width: 100%;
     height: auto;
     margin: 1.5em 0;
-    border-radius: 8px;
-    box-shadow: 0 0 5px #a70000;
+    border: 1px solid #777777;
     transition: transform 0.3s ease;
     min-width: 900px;
 }
@@ -241,9 +261,9 @@ table thead th {
 }
 
 hr {
-    border: 0;
-    border-top: 1px solid #a70000;
-    margin: 2em 0;
+  border: 0;
+  border-top: 1px dotted rgb(167, 0, 0); /* vermelho mais claro via transparência */
+  margin: 2em 0;
 }
 
 .back-link {

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+        <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>Escalonando privilégios usando SMM (ring -2) - Memory
+SinkHole - pwnbuffer.org</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../index.html" class="menu-link">/home</a>
+                <a href="../../p/papers.html" class="menu-link">/papers</a>
+                <a href="../../a/about.html" class="menu-link">/about-us</a>
+                <a href="../../w/worms.html" class="menu-link">/worms</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">pwn@buff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Escalonando privilégios usando SMM
+(ring -2) - Memory SinkHole</h1>
+            <article>
+                  <p><code>Memory Sinkhole:</code> Apresentado por
+                  Christopher Domas na Black Hat USA 2015, revelou como
+                  vulnerabilidades em chipsets x86 e no System
+                  Management Mode (SMM) permitem que invasores
+                  redirecionem acessos de memória e obtenham execução
+                  privilegiada abaixo do kernel.</p>
+                  <img src="../../img/images/raid/Memory-Sinkhole/rings.png" alt="12" style="max-width: 370px; min-width: 340px; border: none;"/>
+
+                  <p>O System Management Mode (SMM) é um modo especial
+                  de operação em processadores da arquitetura x86 que
+                  roda abaixo do sistema operacional — ou, melhor
+                  dizendo, do kernel (ring 0). Ele também opera abaixo
+                  do hypervisor (ring -1) e está associado ao ambiente
+                  de firmware, como UEFI e BIOS (ring -2).</p>
+                  <p>Embora seja projetado para ficar fora do alcance de
+                  programas maliciosos, pesquisas mostraram que essas
+                  camadas podem ser exploradas. O Memory Sinkhole é um
+                  exemplo de vulnerabilidade capaz de comprometer
+                  completamente a segurança do sistema, pois prova que
+                  até mesmo os modos mais privilegiados da CPU podem ser
+                  redirecionados para executar código não autorizado.
+                  Esse ataque mostrou a necessidade de mais
+                  transparência dos fabricantes de hardware e de
+                  auditorias independentes em firmware e chipsets,
+                  reforçando que a segurança de um sistema não depende
+                  só do software ou do kernel, mas também da integridade
+                  das camadas mais profundas do hardware.</p>
+                  <p>O ataque aproveita falhas na validação de endereços
+                  de memória mapeados em dispositivos de I/O (MMIO). Ao
+                  manipular essas áreas, um invasor pode redirecionar
+                  acessos do SMM para regiões sob seu controle. Isso
+                  permite executar código com privilégios maiores que o
+                  kernel, caracterizando uma escalada de
+                  privilégios.</p>
+                  <p>O APIC (Advanced Programmable Interrupt Controller)
+                  também entra nessa história: ele é o componente que
+                  gerencia as interrupções do processador e funciona por
+                  meio de endereços de memória mapeada (MMIO). Durante o
+                  ataque Memory Sinkhole, falhas de validação envolvendo
+                  o APIC puderam ser exploradas para ajudar a
+                  redirecionar acessos do SMM. Ou seja, usando o APIC de
+                  forma inesperada, o invasor conseguia manipular como a
+                  CPU tratava as interrupções e conduzir o firmware a
+                  interagir com áreas de memória que ele controlava.
+                  Isso mostrou que até um controlador legítimo como o
+                  APIC pode virar parte do caminho para comprometer o
+                  sistema se o chipset não for bem protegido.</p>
+                  <p>Na Escalação de privilégios da vulnerabilidade o
+                  atacante já começa com acesso em ring 0 (kernel) e,
+                  usando o APIC, consegue redirecionar acessos de
+                  memória mapeada (MMIO) para estruturas falsas que ele
+                  controla. Quando acontece uma SMI, a CPU entra no
+                  System Management Mode (SMM) — que é ring -2 — e, em
+                  vez de usar os dados legítimos, pega os dados falsos e
+                  faz um salto para o payload do atacante. Com isso, o
+                  código malicioso passa a rodar abaixo do kernel e do
+                  hypervisor, mostrando que dá pra subir de ring 0 pra
+                  ring -2 e tomar controle total do sistema.</p>
+                  <p>Em resumo, ele iria ganhar privilégios mais
+                  profundos ainda abaixo do ring 0 e hypervisor (-1)
+                  obtendo privilégio total.</p>
+                  <p>Agora iremos mostrar um exemplo de código em
+                  assembly x86 que utiliza a vulnerabilidade Memory
+                  Sinkhole para fazer Escalação de privilégios escrito
+                  por Christopher Domas:</p>
+                  <pre><code>; memory sinkhole proof of concept
+; hijack ring -2 execution through the apic overlay attack.
+
+TARGET_SMBASE equ 0x1f5ef800
+
+GDT_ADDRESS equ 0x10000
+
+FJMP_OFFSET equ 0x8097
+DSC_OFFSET equ 0xfb00
+DESCRIPTOR_ADDRESS equ 0x10
+APIC_BASE_MSR equ 0x1b
+SINKHOLE equ ((TARGET_SMBASE+DSC_OFFSET)&amp;0xfffff000)
+PAYLOAD_OFFSET equ 0x1000
+CS_BASE equ (PAYLOAD_OFFSET-FJMP_OFFSET)
+APIC_BSP equ 0x100
+APIC_ACTIVE equ 0x800
+
+wbinvd
+
+mov dword [dword GDT_ADDRESS+DESCRIPTOR_ADDRESS+4],
+    (CS_BASE&amp;0xff000000) | (0x00cf9a00) |
+        (CS_BASE&amp;0x00ff0000)&gt;&gt;16
+mov dword [dword GDT_ADDRESS+DESCRIPTOR_ADDRESS+0],
+    (CS_BASE&amp;0x0000ffff)&lt;&lt;16 | 0xffff
+
+mov eax, SINKHOLE | APIC_ACTIVE | APIC_BSP
+mov edx, 0
+mov ecx, APIC_BASE_MSR
+wrmsr
+
+jmp $</code></pre>
+                  <p>Esse exploit mostra como dá pra subir de ring 0 pra
+                  ring -2 enganando o SMM. Ela limpa o cache da CPU,
+                  monta uma GDT falsa e remapeia o APIC pra um endereço
+                  controlado. Quando rola uma SMI, a CPU entra no SMM e,
+                  em vez de usar os dados certos, pega os dados falsos e
+                  faz um salto pro payload do atacante. Assim, o código
+                  malicioso passa a rodar abaixo do kernel e do
+                  hypervisor, conseguindo privilégio total no
+                  sistema.</p>
+                  <p>É importante deixar claro que o Memory Sinkhole foi
+                  apresentado originalmente em processadores da Intel
+                  mas que o conceito pode se aplicar a outras
+                  arquiteturas x86 com SMM e APIC semelhantes.</p>
+                  <p>Referência: <a
+                  href="https://github.com/xoreaxeaxeax/sinkhole">https://github.com/xoreaxeaxeax/sinkhole</a></p>
+            </article>
+            
+            <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 20000);
+        });
+    });
+</script>
+
+</html>

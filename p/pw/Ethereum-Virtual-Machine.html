@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+        <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>Ethereum Virtual Machine - Review - pwnbuffer.org</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../index.html" class="menu-link">/home</a>
+                <a href="../../p/papers.html" class="menu-link">/papers</a>
+                <a href="../../a/about.html" class="menu-link">/about-us</a>
+                <a href="../../w/worms.html" class="menu-link">/worms</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">pwn@buff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Ethereum Virtual Machine - Review</h1>
+            <article>
+                    <p><code>Author:</code> pa1va<br><code>Date:</code> 2025-09-24 </p>
+                    
+                    <hr>
+
+                  <h3 id="sumário">SUMÁRIO</h3>
+                  <ol start="0" type="1">
+                  <li><a href="#resumo">Resumo</a></li>
+                  <li><a href="#1-definição">Definição</a></li>
+                  <li><a
+                  href="#2-funcionamento-e-propósito">Funcionamento e
+                  Propósito</a></li>
+                  <li><a
+                  href="#3-características">Características</a></li>
+                  <li><a href="#4-limitações">Limitações</a></li>
+                  <li><a href="#5-expansão-além-da-ethereum">Expansão
+                  além da Ethereum</a></li>
+                  <li><a href="#conclusão">Conclusão</a></li>
+                  </ol>
+                  <hr />
+                  <h1 id="o-que-é-a-ethereum-virtual-machine-evm">O que
+                  é a Ethereum Virtual Machine (EVM)?</h1>
+                  <h2 id="resumo">Resumo</h2>
+                  <p>A Ethereum Virtual Machine (EVM) é o componente
+                  central do ecossistema Ethereum, responsável por
+                  interpretar e executar contratos inteligentes. Este
+                  trabalho apresenta uma visão geral de sua definição,
+                  funcionamento, características e limitações, além de
+                  destacar sua relevância no cenário de blockchains
+                  compatíveis.</p>
+                  <h2 id="1-definição">1. Definição</h2>
+                  <p>A Ethereum Virtual Machine (EVM) é uma máquina
+                  virtual completa de Turing que funciona como núcleo
+                  computacional da rede Ethereum. Pode ser entendida
+                  como um “supercomputador descentralizado”, capaz de
+                  hospedar e executar aplicações de forma
+                  distribuída.</p>
+                  <h2 id="2-funcionamento-e-propósito">2. Funcionamento
+                  e Propósito</h2>
+                  <p>A principal função da EVM é executar contratos
+                  inteligentes que são programas autoexecutáveis que
+                  possibilitam transações complexas e a criação de
+                  aplicativos descentralizados (DApps).</p>
+                  <p>Esses contratos são geralmente escritos em
+                  Solidity, compilados em bytecode e posteriormente
+                  interpretados pela EVM.</p>
+                  <p>Esse processo é comparável ao funcionamento de
+                  linguagens de alto nível, como Python, que são
+                  transformadas em bytecode antes de serem executadas
+                  por uma máquina virtual.</p>
+                  <h2 id="3-características">3. Características</h2>
+                  <p>Um dos aspectos mais notáveis da EVM é o seu
+                  ambiente isolado, que protege os contratos de
+                  interferências externas, como sistemas de arquivos ou
+                  processos de rede. Isso garante execução contínua e
+                  segura.</p>
+                  <p>Pode-se pensar na EVM como um “V8 sandboxizado para
+                  bytecode Ethereum”, mas com regras próprias voltadas
+                  para descentralização e consenso.</p>
+                  <h2 id="4-limitações">4. Limitações</h2>
+                  <p>Apesar de suas inovações, a EVM apresenta desafios,
+                  sendo o principal deles o custo de execução. As
+                  chamadas taxas de Gas podem variar conforme a
+                  complexidade do contrato e a demanda da rede, tornando
+                  os custos imprevisíveis e exigindo estratégias de
+                  precificação por parte dos desenvolvedores.</p>
+                  <h2 id="5-expansão-além-da-ethereum">5. Expansão além
+                  da Ethereum</h2>
+                  <p>Embora tenha surgido no contexto da Ethereum, a EVM
+                  extrapolou esse ecossistema. Diversas blockchains,
+                  como BNB Chain, Avalanche, Fantom e Polygon, adotaram
+                  compatibilidade com a EVM, criando um padrão de
+                  desenvolvimento amplamente utilizado no setor de
+                  contratos inteligentes.</p>
+                  <h2 id="conclusão">Conclusão</h2>
+                  <p>A Ethereum Virtual Machine é um dos pilares da
+                  computação descentralizada moderna. Seu modelo de
+                  execução seguro e padronizado tornou-se referência
+                  para múltiplas redes blockchain, ainda que desafios
+                  como as taxas de Gas representem barreiras de
+                  escalabilidade e acessibilidade.</p>
+            </article>
+            
+            <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 20000);
+        });
+    });
+</script>
+
+</html>

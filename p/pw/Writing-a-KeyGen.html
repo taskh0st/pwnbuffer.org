@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+        <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>Writing a KeyGen (Reverse
+Engineering) - pwnbuffer.org</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+  <script>
+      hljs.highlightAll();
+    //  hljs.configure({languages: []});
+    </script>
+
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../index.html" class="menu-link">/home</a>
+                <a href="../../p/papers.html" class="menu-link">/papers</a>
+                <a href="../../a/about.html" class="menu-link">/about-us</a>
+                <a href="../../w/worms.html" class="menu-link">/worms</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">pwn@buff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Writing a KeyGen (Reverse
+Engineering)</h1>
+            <article>
+                    <p><code>Author:</code> pa1va<br><code>Date:</code> 2025-10-03 </p>
+                    
+                    <hr>
+
+                  <p>Linkedin: <a
+                  href="https://www.linkedin.com/in/maiquelpaiva/">https://www.linkedin.com/in/maiquelpaiva/</a></p>
+                  <h1 id="sumario">Sumario</h1>
+                  <p>I. Introdução</p>
+                  <ul>
+                  <li>I.II O que é KeyGen?</li>
+                  <li>I.III Função <code>is_valid_checksum</code></li>
+                  <li>I.V Função <code>check_format</code></li>
+                  <li>I.V Resumo sobre as Funções</li>
+                  </ul>
+                  <p>II. Writing a KeyGen</p>
+                  <ul>
+                  <li>II.I Função <code>value_to_hexchar</code></li>
+                  <li>II.II Função <code>needed_mod7</code></li>
+                  <li>II.III <code>main</code></li>
+                  <li>II.IV Gerando os primeiros 7 caracteres</li>
+                  <li>II.V Calculando o último caractere</li>
+                  <li>II.VI Finalizando a chave</li>
+                  <li>II.VII Impressão da chave e validação</li>
+                  <li>II.VIII Resumo do funcionamento do keygen</li>
+                  </ul>
+                  <p>III. Resultado</p>
+                  <h1 id="introdução">Introdução</h1>
+                  <p>O desafio é "Write a Keygen", o nome do desafio já
+                  diz o que devemos fazer. Este desafio é voltado para
+                  Unix/Linux. O author deste desafio é chamado de
+                  syscall. Peguei este desafio na plataforma <a
+                  href="https://crackmes.one">https://crackmes.one</a>.<br />
+                  Ferramenta que eu usei: <strong>Binary
+                  Ninja</strong>.</p>
+                  <h2 id="o-que-é-keygen">O que é KeyGen?</h2>
+                  <p>Um keygen (gerador de chaves) é um programa que
+                  cria códigos ou “chaves” válidas para softwares que
+                  usam algum tipo de proteção. Essas chaves normalmente
+                  verificam se você pode ativar ou desbloquear o
+                  software. O keygen faz com que o código gerado passe
+                  na validação do programa.</p>
+                  <h1 id="doing-reverse-in-binary">Doing Reverse in
+                  Binary</h1>
+                  <h2 id="função-is_valid_checksum">Função
+                  'is_valid_checksum'</h2>
+                  <p><img
+                  src="../../img/images/pa1va/writing-a-keygen/1.png"
+                  alt="1" /></p>
+                  <p>Objetivo da função é verificar se tem algum tipo de
+                  "checksum" ou validação de string.</p>
+                  <p>Vamos analisar:</p>
+                  <ol type="1">
+                  <li><p>var_1c = 0 → vai acumular algum valor baseado
+                  na string.</p></li>
+                  <li><p>Loop sobre cada caractere da string (var_20 é
+                  índice).</p></li>
+                  <li><p>Verifica se o caractere não é alfanumérico
+                  (usando __ctype_b_loc(), flags de ctype).</p>
+                  <ul>
+                  <li>Se não for alfanumérico ou não for letra/número,
+                  retorna 0 → string inválida.</li>
+                  </ul></li>
+                  <li><p>Se for letra: var_1c += toupper(c) - 0x37</p>
+                  <ul>
+                  <li>0x37 é 55 em decimal</li>
+                  <li>Isto mapeia letras A-F (em ASCII) para valores
+                  10-15, típico de conversão hexadecimal.</li>
+                  </ul></li>
+                  <li><p>Se for número: var_1c += caractere - '0' → pega
+                  valor numérico.</p></li>
+                  <li><p>Ao final: var_1c % 7 == 0 → retorna 1 se a soma
+                  módulo 7 for zero, 0 caso contrário.</p></li>
+                  </ol>
+                  <p>Resumo: Essa função valida se a string contém
+                  apenas caracteres hexadecimais e se a soma deles (com
+                  A=10..F=15) é divisível por 7.</p>
+                  <h2 id="função-check_format">Função
+                  'check_format'</h2>
+                  <p><img
+                  src="../../img/images/pa1va/writing-a-keygen/2.png"
+                  alt="2" /></p>
+                  <p>Objetivo: Validar o formato da string.</p>
+                  <p>Vamos analisar:</p>
+                  <ol type="1">
+                  <li><p>Inicializa contadores var_1c e var_20.</p>
+                  <ul>
+                  <li>var_1c → conta dígitos.</li>
+                  <li>var_20 → conta letras.</li>
+                  </ul></li>
+                  <li><p>Loop sobre cada caractere.</p>
+                  <ul>
+                  <li>Se for um dígito (isxdigit ou isdigit?) →
+                  var_1c++</li>
+                  <li>Se for uma letra → var_20++</li>
+                  <li>Se não for letra nem dígito → retorna 0 →
+                  inválido</li>
+                  </ul></li>
+                  <li><p>Ao final, verifica:</p></li>
+                  </ol>
+                  <pre class="c"><code>if (var_1c != strlen(arg1) &amp;&amp; var_20 != strlen(arg1) - 1)
+    return 0;</code></pre>
+                  <p>Ou seja, aceita ou string só com dígitos, ou string
+                  com todas letras exceto uma posição.</p>
+                  <ol start="4" type="1">
+                  <li>Retorna 1 → válido, 0 → inválido.</li>
+                  </ol>
+                  <p>Resumo: Confirma que a string está no formato
+                  esperado, ou seja, provavelmente um alfanumérico
+                  “quase” todo dígito ou letra.</p>
+                  <h2 id="resumo-sobre-as-funções">Resumo sobre as
+                  Funções</h2>
+                  <p><code>check_format()</code> garante que a string
+                  tem apenas letras e/ou dígitos e segue um padrão
+                  específico.</p>
+                  <p><code>is_valid_checksum()</code> garante que a
+                  string passa numa checagem matemática simples (soma
+                  módulo 7).</p>
+                  <p>Juntas, provavelmente formam a validação de uma
+                  “key” ou código, algo típico em um serial ou
+                  keygen.</p>
+                  <h1 id="writing-a-keygen">Writing a KeyGen</h1>
+                  <h2 id="função-value_to_hexchar">Função
+                  <code>value_to_hexchar</code></h2>
+                  <pre class="c"><code>char value_to_hexchar(int val) {
+    if (val &gt;= 0 &amp;&amp; val &lt;= 9) return &#39;0&#39; + val;
+    if (val &gt;= 10 &amp;&amp; val &lt;= 15) return &#39;A&#39; + (val - 10);
+    return &#39;?&#39;;
+}</code></pre>
+                  <ul>
+                  <li>Converte um valor numérico (0–15) para um
+                  <strong>caractere hexadecimal</strong>.</li>
+                  <li>Exemplo:
+                  <ul>
+                  <li>0 → <code>'0'</code></li>
+                  <li>9 → <code>'9'</code></li>
+                  <li>10 → <code>'A'</code></li>
+                  <li>15 → <code>'F'</code></li>
+                  </ul></li>
+                  <li>Retorna <code>'?'</code> se o valor estiver fora
+                  do intervalo.</li>
+                  </ul>
+                  <h2 id="função-needed_mod7">Função
+                  <code>needed_mod7</code></h2>
+                  <pre class="c"><code>int needed_mod7(int sum) {
+    int rem = sum % 7;
+    if (rem &lt; 0) rem += 7;
+    return (7 - rem) % 7;
+}</code></pre>
+                  <ul>
+                  <li>Calcula o <strong>quanto falta para a soma ser
+                  múltiplo de 7</strong>.</li>
+                  </ul>
+                  <p>Vamos calcular:<br />
+                  1. <code>rem = sum % 7</code> → resto da divisão da
+                  soma por 7. 2. Se o resto for negativo, ajusta para
+                  positivo. 3. Retorna <code>7 - rem</code> módulo 7 →
+                  valor necessário para que
+                  <code>(sum + valor) % 7 == 0</code>.</p>
+                  <p>Exemplo:</p>
+                  <ul>
+                  <li><code>sum = 23</code> → <code>23 % 7 = 2</code> →
+                  <code>needed_mod7 = 5</code></li>
+                  <li>Adicionando 5: <code>23 + 5 = 28</code>, e
+                  <code>28 % 7 = 0</code> ✅</li>
+                  </ul>
+                  <hr />
+                  <h2 id="main"><code>main</code></h2>
+                  <pre class="c"><code>srand((unsigned int)time(NULL));
+int length = 8;
+int sum = 0;
+char key[9];</code></pre>
+                  <ul>
+                  <li>Inicializa o gerador de números aleatórios com
+                  <code>time(NULL)</code>.</li>
+                  <li>Define comprimento da chave
+                  (<code>length = 8</code>) e soma acumulada
+                  (<code>sum = 0</code>).</li>
+                  <li><code>key[9]</code> → espaço para 8 caracteres +
+                  <code>\0</code> para finalizar string.</li>
+                  </ul>
+                  <hr />
+                  <h2 id="gerando-os-primeiros-7-caracteres">Gerando os
+                  primeiros 7 caracteres</h2>
+                  <pre class="c"><code>for (int i = 0; i &lt; length - 1; i++) {
+    int val = rand() % 16;
+    key[i] = value_to_hexchar(val);
+    sum += val;
+    printf(&quot;Char %d: %c, partial sum = %d\n&quot;, i + 1, key[i], sum);
+}</code></pre>
+                  <ul>
+                  <li>Sorteia <strong>7 valores aleatórios</strong>
+                  entre 0 e 15 (0–9 e A–F).</li>
+                  <li>Converte cada valor em caractere hexadecimal.</li>
+                  <li>Soma os valores (<code>sum</code>) para acompanhar
+                  o checksum.</li>
+                  <li>Mostra cada caractere e soma parcial na tela.</li>
+                  </ul>
+                  <hr />
+                  <h2 id="calculando-o-último-caractere">Calculando o
+                  último caractere</h2>
+                  <pre class="c"><code>int last_val = needed_mod7(sum);
+if (last_val &gt; 15) last_val = 15;
+key[length - 1] = value_to_hexchar(last_val);
+sum += last_val;</code></pre>
+                  <ul>
+                  <li>Usa <code>needed_mod7(sum)</code> para determinar
+                  o valor que <strong>faz a soma ser múltiplo de
+                  7</strong>.</li>
+                  <li>Garante que o valor final não passe de 15 (máximo
+                  permitido em hexadecimal).</li>
+                  <li>Converte para caractere e adiciona à chave.</li>
+                  <li>Atualiza a soma final.</li>
+                  </ul>
+                  <hr />
+                  <h2 id="finalizando-a-chave">Finalizando a chave</h2>
+                  <pre class="c"><code>key[length] = &#39;\0&#39;;</code></pre>
+                  <ul>
+                  <li>Termina a string com o caractere nulo
+                  (<code>\0</code>) para poder imprimir como string em
+                  C.</li>
+                  </ul>
+                  <hr />
+                  <h2 id="impressão-da-chave-e-validação">Impressão da
+                  chave e validação</h2>
+                  <pre class="c"><code>printf(&quot;Last char: %c, final sum = %d\n&quot;, key[length - 1], sum);
+printf(&quot;Generated key: %s\n&quot;, key);
+printf(&quot;Validation: sum %% 7 = %d\n&quot;, sum % 7);</code></pre>
+                  <ul>
+                  <li><p>Mostra:</p>
+                  <ul>
+                  <li>Último caractere e soma final.</li>
+                  <li>A chave gerada completa.</li>
+                  <li>Validação: <code>sum % 7</code> deve ser 0 ✅</li>
+                  </ul></li>
+                  </ul>
+                  <hr />
+                  <h2 id="resumo-de-como-funciona-nosso-keygen">Resumo
+                  de como funciona nosso keygen</h2>
+                  <ol type="1">
+                  <li>Sorteia 7 caracteres aleatórios (0-9, A-F).</li>
+                  <li>Converte e soma seus valores numéricos.</li>
+                  <li>Calcula qual valor deve ser o último caractere
+                  para <strong>fechar o checksum</strong>
+                  (<code>sum % 7 == 0</code>).</li>
+                  <li>Gera a chave final de 8 caracteres com soma
+                  divisível por 7.</li>
+                  <li>Mostra passo a passo (debug) e valida a
+                  chave.</li>
+                  </ol>
+                  <h1 id="resultado">Resultado</h1>
+                  <p><img
+                  src="../../img/images/pa1va/writing-a-keygen/3.png"
+                  alt="3" /></p>
+                  <p>Obrigado a todos, bom aprendizado!</p>
+            </article>
+            
+            <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 20000);
+        });
+    });
+</script>
+
+</html>

